@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Sheet Music Generator</title>
+    <style>
+        @font-face {
+            font-family:bravura;
+            src: url("/fonts/Bravura.woff2");
+        }
+        body {
+            margin: 0;
+            /* overflow:hidden; */
+        }
+        #poppy {
+            font: "bravura";
+            font-family:bravura;
+            color:red;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="sheet-music"></canvas>
+    <p id="poppy">&#xE050;</p>
+</body>
+<script>
+    var CANVAS
+    function main() {
+        CANVAS = document.getElementById('sheet-music')
+        fitToScreen() 
+    }
+    function fitToScreen() {
+        CANVAS.width = window.innerWidth
+        CANVAS.height = window.innerHeight
+        drawScene()
+    }
+    function drawScene() {
+        var ctx = CANVAS.getContext('2d')
+        var {width, height} = CANVAS
+        ctx.fillStyle = "black"
+        Array(8).fill(null).forEach((v, ind) => 
+            Array(5).fill(null).forEach( (v,i) => ctx.fillRect(0, (5) + 10*i + 100*ind, width, 1) )
+        )
+        ctx.fillRect(5,5,1,40)
+        ctx.fillRect(7,5,1,40)
+        
+        ctx.font = "40px bravura"
+        console.log(ctx.font)
+        ctx.fillText("\uE050", 5, 135)
+    }
+
+    let f = new FontFace('bravura', 'url(/fonts/Bravura.woff2)')
+    f.load().then((loaded)=> {
+        
+    main() })
+</script>
+</html>
