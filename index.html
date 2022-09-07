@@ -19,7 +19,7 @@
 
         #sound {
             position:absolute;
-            top: 0;
+            top: 120px;
         }
         /* #poppy {
             font: "bravura";
@@ -220,15 +220,29 @@
     var dir = "FORWARD"
     var start, previousTimeStamp
     var done = false
+    var currentNoteDuration = 0.5
+    var noteNumber = 0
     function begin() {
     window.requestAnimationFrame(function loop(timestamp) {
         if (start === undefined) {
             start = timestamp
         }
-        const elapsed = timestamp - start
-
+        let elapsed = timestamp - start
+        if      (x >= (20 * 5)) {currentNoteDuration = 1;      noteNumber = 5; elapsed -= 3000; console.log(5)}
+        else if (x >= (20 * 4)) {currentNoteDuration = 0.5 ;   noteNumber = 4; elapsed -= 2500; console.log(4)}
+        else if (x >= (20 * 3)) {currentNoteDuration = 0.5 ;   noteNumber = 3; elapsed -= 2000; console.log(3)}
+        else if (x >= (20 * 2)) {currentNoteDuration = 1;      noteNumber = 2; elapsed -= 1000; console.log(2, elapsed)}
+        else if (x >= (20 * 1)) {currentNoteDuration = 0.5 ;   noteNumber = 1; elapsed -= 500; console.log(1, elapsed)}
+        else if (x >= (20 * 0)) {currentNoteDuration = 0.5 ;   noteNumber = 0; elapsed -= 0; console.log(0, elapsed)}
         if (previousTimeStamp !== timestamp) {
-            x = Math.min(elapsed*0.001, 1)/0.05
+            if (currentNoteDuration === 1){
+                x = noteNumber * 20 + Math.min(elapsed*0.001, 1)/0.05
+                console.log(Math.min(elapsed*0.001, 1)/0.05)
+            }
+            else if (currentNoteDuration === 0.5){
+                console.log(Math.min(elapsed*0.001, 1)/0.025, 'half')
+                x = noteNumber * 20 + Math.min(elapsed*0.001, 1)/0.025
+            }
         }
             
 
@@ -253,6 +267,7 @@
         
         ctx.fillStyle = "black"
         ctx.fillRect(startStaffX + 104.5 + x, 16 + y, 1, 99)
+        if (x === 120) return
         window.requestAnimationFrame(loop)
     })}
 
@@ -261,7 +276,7 @@
     const duration = [0,0.5,1,2,2.5,3,4]
     const song = ["F5", "E5", "D5", "C5", "G4", "E4", "C4"]
     function playSound(frequency, time) {
-        console.log('here', frequency, time, duration, SOUND.currentTime + time)
+        // console.log('here', frequency, time, duration, SOUND.currentTime + time)
         const osc =  SOUND.createOscillator()
         const gainNode = SOUND.createGain()
         osc.connect(gainNode)
