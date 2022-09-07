@@ -265,13 +265,20 @@
         // }
         // console.log(ANIMATION)
         
+        if (x === 120) {
+            x = 0
+            currentNoteDuration = 0.5
+            noteNumber = 0
+            start = undefined
+            return
+        } 
         ctx.fillStyle = "black"
         ctx.fillRect(startStaffX + 104.5 + x, 16 + y, 1, 99)
-        if (x === 120) return
         window.requestAnimationFrame(loop)
     })}
 
     BUTTON.addEventListener('click', play)
+
     async function play() {
     const duration = [0,0.5,1,2,2.5,3,4]
     const song = ["F5", "E5", "D5", "C5", "G4", "E4", "C4"]
