@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <title>Sheet Music Generator</title>
+    <link rel="icon" href="./music.svg">
     <style>
         @font-face {
             font-family:bravura;
@@ -11,110 +12,278 @@
             margin: 0;
             /* overflow:hidden; */
         }
-        #poppy {
+        #animation {
+            position:absolute;
+            top: 0;
+        }
+
+        #sound {
+            position:absolute;
+            top: 0;
+        }
+        /* #poppy {
             font: "bravura";
             font-family:bravura;
             color:red;
-        }
+        } */
     </style>
 </head>
 <body>
     <canvas id="sheet-music"></canvas>
-    <p id="poppy">&#xE050;</p>
+    <canvas id="animation"></canvas>
+    <button id="sound">Play Sound</button>
+    <!-- <p id="poppy">&#xE050;</p> -->
 </body>
 <script>
     var CANVAS
+    var ANIMATION
+    var SOUND = new AudioContext()
+    var BUTTON = document.getElementById('sound')
+
+    const frequencyNoteMap = {
+        "C0":16.05,
+        "C#0/Db0":17.01,
+        "D0":18.02,
+        "D#0/Eb0":19.09,
+        "E0":20.23,
+        "F0":21.43,
+        "F#0/Gb0":22.70,
+        "G0":24.05,
+        "G#0/Ab0":25.48,
+        "A0":27.00,
+        "A#0/Bb0":28.61,
+        "B0":30.31,
+        "C1":32.11,
+        "C#1/Db1":34.02,
+        "D1":36.04,
+        "D#1/Eb1":38.18,
+        "E1":40.45,
+        "F1":42.86,
+        "F#1/Gb1":45.41,
+        "G1":48.11,
+        "G#1/Ab1":50.97,
+        "A1":54.00,
+        "A#1/Bb1":57.21,
+        "B1":60.61,
+        "C2":64.22,
+        "C#2/Db2":68.04,
+        "D2":72.08,
+        "D#2/Eb2":76.37,
+        "E2":80.91,
+        "F2":85.72,
+        "F#2/Gb2":90.82,
+        "G2":96.22,
+        "G#2/Ab2":101.94,
+        "A2":108.00,
+        "A#2/Bb2":114.42,
+        "B2":121.23,
+        "C3":128.43,
+        "C#3/Db3":136.07,
+        "D3":144.16,
+        "D#3/Eb3":152.74,
+        "E3":161.82,
+        "F3":171.44,
+        "F#3/Gb3":181.63,
+        "G3":192.43,
+        "G#3/Ab3":203.88,
+        "A3":216.00,
+        "A#3/Bb3":228.84,
+        "B3":242.45,
+        "C4":256.87,
+        "C#4/Db4":272.14,
+        "D4":288.33,
+        "D#4/Eb4":305.47,
+        "E4":323.63,
+        "F4":342.88,
+        "F#4/Gb4":363.27,
+        "G4":384.87,
+        "G#4/Ab4":407.75,
+        "A4":432.00,
+        "A#4/Bb4":457.69,
+        "B4":484.90,
+        "C5":513.74,
+        "C#5/Db5":544.29,
+        "D5":576.65,
+        "D#5/Eb5":610.94,
+        "E5":647.27,
+        "F5":685.76,
+        "F#5/Gb5":726.53,
+        "G5":769.74,
+        "G#5/Ab5":815.51,
+        "A5":864.00,
+        "A#5/Bb5":915.38,
+        "B5":969.81,
+        "C6":1027.47,
+        "C#6/Db6":1088.57,
+        "D6":1153.30,
+        "D#6/Eb6":1221.88,
+        "E6":1294.54,
+        "F6":1371.51,
+        "F#6/Gb6":1453.07,
+        "G6":1539.47,
+        "G#6/Ab6":1631.01,
+        "A6":1728.00,
+        "A#6/Bb6":1830.75,
+        "B6":1939.61,
+        "C7":2054.95,
+        "C#7/Db7":2177.14,
+        "D7":2306.60,
+        "D#7/Eb7":2443.76,
+        "E7":2589.07,
+        "F7":2743.03,
+        "F#7/Gb7":2906.14,
+        "G7":3078.95,
+        "G#7/Ab7":3262.03,
+        "A7":3456.00,
+        "A#7/Bb7":3661.50,
+        "B7":3879.23,
+        "C8":4109.90,
+        "C#8/Db8":4354.29,
+        "D8":4613.21,
+        "D#8/Eb8":4887.52,
+        "E8":5178.15,
+        "F8":5486.06,
+        "F#8/Gb8":5812.28,
+        "G8":6157.89,
+        "G#8/Ab8":6524.06,
+        "A8":6912.00,
+        "A#8/Bb8":7323.01,
+        "B8":7758.46
+    }
+
+    console.log(frequencyNoteMap)
+
     function main() {
         CANVAS = document.getElementById('sheet-music')
+        ANIMATION = document.getElementById('animation')
+
         fitToScreen() 
     }
     function fitToScreen() {
         CANVAS.width = window.innerWidth
         CANVAS.height = window.innerHeight
+        ANIMATION.width = window.innerWidth
+        ANIMATION.height = window.innerHeight
+        console.log(window.outerWidth)
+        console.log(window.innerWidth)
+        console.log(ANIMATION.width)
         drawScene()
     }
     function drawScene() {
         var ctx = CANVAS.getContext('2d')
         var {width, height} = CANVAS
+        var startStaffX = 40
         ctx.fillStyle = "black"
-        Array(8).fill(null).forEach((v, ind) => 
-            Array(5).fill(null).forEach( (v,i) => ctx.fillRect(0, (5) + 10*i + 100*ind, width, 1) )
-        )
-        ctx.fillRect(5,5,1,40)
-        ctx.fillRect(7,5,1,40)
-        
         ctx.font = "40px bravura"
-        console.log(ctx.font)
-        ctx.fillText("\uE050", 5, 135)
-        ctx.fillText(`\uE07A`, 45 + 40*1, 135)
-        ctx.fillText(`\ue08a`, 45 + 40*2, 125)
-        ctx.fillText(`\ue0a2`, 45 + 40*3, 125.5)
-        ctx.fillText(`\ue0a3`, 45 + 40*4, 125.5)
-        ctx.fillText(`\ue0a4`, 45 + 40*5, 125.5)
-        ctx.fillText(`\ue0a4`, 45 + 40*6, 120)
-        ctx.fillText(`\ue0a4`, 45 + 40*7, 130)
-        ctx.fillText(`\ue0a4`, 45 + 40*8, 110)
-        ctx.fillText(`\ue0a4`, 45 + 40*9, 140)
-        ctx.fillText(`\ue0a4`, 45 + 40*10, 115.5)
-        ctx.fillText(`\ue0a4`, 45 + 40*11, 135.5)
+        ctx.fillText("\uE084", startStaffX + 43, 25)                                 // Time signatures  - treble
+        ctx.fillText("\uE084", startStaffX + 43, 45)
         
-        ctx.fillText(`\ue1d4`, 45 + 40*0, 225.5)
-        ctx.fillText(`\ue1d4`, 45 + 40*1, 220.5)
-        ctx.fillText(`\ue1d5`, 45 + 40*2, 215.5)
-        ctx.fillText(`\ue1d6`, 45 + 40*3, 230.5)
-        ctx.fillText(`\ue1d7`, 45 + 40*4, 240.5)
-        ctx.fillText(`\ue1d8`, 45 + 40*5, 235.5)
-        ctx.fillText(`\ue1d4`, 45 + 40*6, 225.5)
-        ctx.fillText(`\ue1f0`, 45 + 40*7, 225.5)
-        ctx.fillText(`\ue1f1`, 45 + 40*8, 225.5)
-        ctx.fillText(`\ue1f2`, 45 + 40*9, 225.5)
-        ctx.fillText(`\ue1f3`, 45 + 40*10,225.5)
-        ctx.fillText(`\ue1f7`, 45 + 40*11,225.5)
-        ctx.fillText(`\ue260`, 45 + 40*12, 225.5)
-        ctx.fillText(`\ue261`, 45 + 40*13, 220.5)
-        ctx.fillText(`\ue262`, 45 + 40*14, 215.5)
-        ctx.fillText(`\ue4e5`, 45 + 40*15, 226.5)
-        ctx.fillText(`\ue4e3`, 45 + 40*16, 220.5)
-        ctx.fillText(`\ue4e4`, 45 + 40*17, 230.5)
-        ctx.fillText(`\ue550`, 45 + 40*18, 225.5)
-        ctx.fillText(`\ue551`, 45 + 40*19, 225.5)
-        ctx.fillText(`\ue552`, 45 + 40*20, 225.5)
-
-        ctx.fillRect(4 + 20,305,2,40)
-        ctx.fillRect(4 + 24,305,2,40)
-        ctx.fillText(`\ue9f0`, 5 + 40*1, 325.5)
-        ctx.fillText(`\ue9f1`, 5 + 40*2,325.5)
-        ctx.fillText(`\ue084`, 5 + 40*3,335)
-        ctx.fillText(`\ue084`, 5 + 40*3,315)
-        ctx.fillText(`\ue032`, 5 + 40*4,345)
-        ctx.fillText(`\ue033`, 5 + 40*5,345)
-        ctx.fillRect(4 + 220,305,5,40)
-        ctx.fillRect(4 + 228,305,1,40)
+        ctx.fillText("\uE084", startStaffX + 43, 60 + 25)               //  - bass
+        ctx.fillText("\uE084", startStaffX + 43, 60 + 45)
         
-        ctx.fillText(`\ue034`, 5 + 40*6,345)
-        ctx.fillRect(5 + 260,305,5,40)
-        ctx.fillRect(5 + 269,305,5,40)
-        ctx.fillText(`\ue035`, 5 + 40*7,345)
-        ctx.fillText(`\ue030`, 5 + 40*8,345)
-        ctx.fillText(`\ue031`, 5 + 40*9,345)
+        ctx.fillText("\ue0a4", startStaffX + 100, 15.5)
+        ctx.fillText("\ue0a4", startStaffX + 100 + 20* 1, 20.5)
+        ctx.fillText("\ue0a4", startStaffX + 100 + 20* 2, 25.5)
+        ctx.fillText("\ue0a4", startStaffX + 100 + 20* 3, 30.5)
+        ctx.fillText("\ue0a4", startStaffX + 100 + 20* 4, 45.5)
+        ctx.fillText("\ue0a4", startStaffX + 100 + 20* 5, 55.5)
+        ctx.fillText("\ue0a4", startStaffX + 100 + 20* 6, 65.5)
+        ctx.fillRect(startStaffX + 210, 15 + 50,30,1) // C3 bar
+        Array(3).fill(null).forEach((v, index) => {                                     // Number of grand staves
+            ctx.font = `100px bravura`
+            ctx.fillText("\uE000", 25, 115 + 160 * index)               // Staff Bracket
+            ctx.font = "40px bravura"
+            ctx.fillText("\uE050", startStaffX + 10, 45 + 160 * index)  // Treble Clef
+            ctx.fillText(`\ue062`, startStaffX + 10,85.5 + 160 * index) // Bass Clef    
+            Array(2).fill(null).forEach((v, ind) => {                                   // Treble and Bass staves
+                ctx.fillRect(startStaffX + 10,15 + 50 + 160*index,30,1) // C3 bar
+                
+                ctx.fillRect(startStaffX,15 + 160 * index,2,100)        // Start Staff
+                ctx.fillRect(startStaffX + 870,15 + 160 * index,2,101)  // End staff
 
-        ctx.fillRect(5 + 400,305,2,40)
-        ctx.fillRect(4 + 440,305,1.5,40)
+                
+                Array(5).fill(null).forEach( (v,i) =>                                   // Staff lines
+                    ctx.fillRect(startStaffX, (15) + 10 * i + 60 * ind + 160 * index, 871, 1) )
+        }) })
 
-        ctx.fillText(`\ue1e7`, 5 + 40*12,325.5)
-        ctx.fillText(`\ue1fc`, 5 + 40*13,346)
-        ctx.fillText(`\ue031`, 5 + 40*14,345)
-        ctx.fillText(`\ue240`, 5 + 40*15,325.5)
-        ctx.fillText(`\ue241`, 5 + 40*16,325.5)
-        ctx.fillText(`\ue242`, 5 + 40*17,325.5)
-        ctx.fillText(`\ue243`, 5 + 40*18,325.5)
-        ctx.fillText(`\ue250`, 5 + 40*19,325.5)
-        ctx.fillText(`\ue251`, 5 + 40*20,325.5)
+
+        // ctx.fillRect(9,15,2,40)
+        // ctx.fillRect(5,75,2,40)
+        // ctx.fillRect(9,75,2,40)
+        
+        // console.log(ctx.font)
+        // ctx.fillRect(50, 15, 1, 140)
+        
     }
+    var x = 0
+    var y = 0
+    var dir = "FORWARD"
+    var start, previousTimeStamp
+    var done = false
+    function begin() {
+    window.requestAnimationFrame(function loop(timestamp) {
+        if (start === undefined) {
+            start = timestamp
+        }
+        const elapsed = timestamp - start
 
-    let f = new FontFace('bravura', 'url(/fonts/Bravura.woff2)')
-    f.load().then((loaded)=> {
+        if (previousTimeStamp !== timestamp) {
+            x = Math.min(elapsed*0.001, 1)/0.05
+        }
+            
+
+        const duration = [0,0.5,1,2,2.5,3,4]
+        var staffLineWidth = 870
+        var startStaffX = 40
+        var ctx = ANIMATION.getContext('2d')
+        ctx.clearRect(0, 0, ANIMATION.width, ANIMATION.height)
         
-    main() })
+        // if (dir === "FORWARD") {
+        //     if (y=== 320 && x === staffLineWidth ) {x=0; y = 0}
+        //     else if (x === staffLineWidth) {x = 0; y+=160}
+        //     x += 20
+        //     if (x > staffLineWidth) {x = staffLineWidth}
+            // /* else */ if (x >= 845) {dir = "BACKWARD"; window.requestAnimationFrame(loop);return}
+        // }
+        // else if (dir === "BACKWARD") {
+        //     x -= 4
+        //     if ( x < 30) dir = "FORWARD"
+        // }
+        // console.log(ANIMATION)
+        
+        ctx.fillStyle = "black"
+        ctx.fillRect(startStaffX + 104.5 + x, 16 + y, 1, 99)
+        window.requestAnimationFrame(loop)
+    })}
+
+    BUTTON.addEventListener('click', play)
+    async function play() {
+    const duration = [0,0.5,1,2,2.5,3,4]
+    const song = ["F5", "E5", "D5", "C5", "G4", "E4", "C4"]
+    function playSound(frequency, time) {
+        console.log('here', frequency, time, duration, SOUND.currentTime + time)
+        const osc =  SOUND.createOscillator()
+        const gainNode = SOUND.createGain()
+        osc.connect(gainNode)
+        gainNode.connect(SOUND.destination)
+        gainNode.gain.exponentialRampToValueAtTime(0.1, SOUND.currentTime + time )
+        gainNode.gain.linearRampToValueAtTime(0.00001, SOUND.currentTime + 1 + time)
+        // gainNode.gain.linearRampToValueAtTime(0, SOUND.currentTime + time + duration)
+        osc.type = 'triangle'
+        osc.frequency.value = frequency
+        osc.start(SOUND.currentTime + time)
+
+        
+        // osc.stop(SOUND.currentTime + duration + time)
+    }
+    begin()
+    for (var i = 0; i < song.length; i++) {
+            playSound(frequencyNoteMap[song[i]], duration[i])
+    }}
+    // let f = new FontFace('bravura', 'url(/fonts/Bravura_stripped.woff2)')
+    // f.load().then((loaded)=> {
+        
+    // main() })
+    main()
 </script>
 </html>

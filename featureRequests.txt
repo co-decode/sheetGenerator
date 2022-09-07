@@ -2,7 +2,9 @@
 
     ALSO watch this: https://www.youtube.com/watch?v=VXWvfrmpapI
 
-Make a moving line with the Rect tool
+    DONE Compress font to desired glyphs.
+
+DONE Make a moving line with the Rect tool
 
 Synchronise the movement of the line with the sheet music and the sound output
 
