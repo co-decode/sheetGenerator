@@ -35,6 +35,7 @@
     <!-- <p id="poppy">&#xE050;</p> -->
 </body>
 <script>
+    'use strict'
     var CANVAS
     var ANIMATION
     var SOUND = new AudioContext()
@@ -167,9 +168,20 @@
         console.log(window.outerWidth)
         console.log(window.innerWidth)
         console.log(ANIMATION.width)
-        drawScene()
+        drawSheet()
     }
-    function drawScene() {
+
+    const songObject = {
+        "G5": 0.5,
+        "F5": 0.5,
+        "E5": 1,
+        "C5": 0.25,
+        "G4": 0.25,
+        "E4": 0.25,
+        "C4": 1
+    }
+
+    function drawSheet() {
         var ctx = CANVAS.getContext('2d')
         var {width, height} = CANVAS
         var startStaffX = 40
@@ -180,6 +192,8 @@
         
         ctx.fillText("\uE084", startStaffX + 43, 60 + 25)               //  - bass
         ctx.fillText("\uE084", startStaffX + 43, 60 + 45)
+
+        // |~~~~~~~~~~~~~~ -- | Note placement | -- ~~~~~~~~~~~~~~| \\
         
         ctx.fillText("\ue0a4", startStaffX + 100, 15.5)
         ctx.fillText("\ue0a4", startStaffX + 100 + 20* 1, 20.5)
@@ -188,6 +202,8 @@
         ctx.fillText("\ue0a4", startStaffX + 100 + 20* 4, 45.5)
         ctx.fillText("\ue0a4", startStaffX + 100 + 20* 5, 55.5)
         ctx.fillText("\ue0a4", startStaffX + 100 + 20* 6, 65.5)
+
+        
         ctx.fillRect(startStaffX + 210, 15 + 50,30,1) // C3 bar
         Array(3).fill(null).forEach((v, index) => {                                     // Number of grand staves
             ctx.font = `100px bravura`
@@ -222,112 +238,76 @@
     var done = false
     // var currentNoteDuration = 0.5
     // var noteNumber = 0
-    const songObject = {
-        "F5": 0.5,
-        "E5": 0.5,
-        "D5": 1,
-        "C5": 0.5,
-        "G4": 0.5,
-        "E4": 1,
-        "C4": 1
-    }
-    function begin() {
+
+        // |~~~~~~~~~~~~~~ -- | Bar animation | -- ~~~~~~~~~~~~~~| \\
+
+    function animateBar() {
         let i = 0
-
-
     window.requestAnimationFrame(function loop(timestamp) {
         if (start === undefined) {
             start = timestamp
         }
-        let elapsed = timestamp - start
+        const elapsed = timestamp - start
         // Dynamic line movement, based on duration of note and distance to next note
-        // if      (x >= (20 * i)) {currentNoteDuration = Object.values(songObject)[i];   noteNumber = i; elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)}
-        // else if (x >= (20 * i)) {currentNoteDuration = Object.values(songObject)[i];   noteNumber = i; elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)}
-        // else if (x >= (20 * i)) {currentNoteDuration = Object.values(songObject)[i];   noteNumber = i; elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)}
-        // else if (x >= (20 * i)) {currentNoteDuration = Object.values(songObject)[i];   noteNumber = i; elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)}
-        // else if (x >= (20 * i)) {currentNoteDuration = Object.values(songObject)[i];   noteNumber = i; elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)}
-        // else if (x >= (20 * i)) {currentNoteDuration = Object.values(songObject)[i];   noteNumber = i; elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)}
-        // elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)
-        // currentNoteDuration = Object.values(songObject)[i]
-        // noteNumber = i
-        if (x >= 20 + 20 * i) {
-            i++
-            // currentNoteDuration = Object.values(songObject)[i]
-            // noteElapsed = elapsed - Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)*1000
-        }
-        noteElapsed = elapsed - Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0) * 1000
-
-        if (previousTimeStamp !== timestamp) {
-            if (Object.values(songObject)[i] === 1){
-                x = i * 20 + Math.min(noteElapsed*0.001, 1)/0.05
-                // console.log("Math.min(elapsed*0.001, 1)/0.05", x)
-            }
-            else if (Object.values(songObject)[i] === 0.5){
-                x = i * 20 + Math.min(noteElapsed*0.001, 1)/0.025
-                // console.log('half', x)
-            }
-        }
+        
+        if (x >= 20 * (i + 1)) i++
+        const songElapsed = Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0) * 1000
+        const noteElapsed = elapsed - songElapsed
+        const noteDuration = Object.values(songObject)[i]
+        x = i * 20 + (noteElapsed*0.001/noteDuration) * 20
+       
         var staffLineWidth = 870
         var startStaffX = 40
+        var offsetToFirstNote = 104.5
+        var offsetToFirstLine = 16
         var ctx = ANIMATION.getContext('2d')
         ctx.clearRect(0, 0, ANIMATION.width, ANIMATION.height)
         
-        // VvV Linear line movement
-        {
-        // if (dir === "FORWARD") {
-        //     if (y=== 320 && x === staffLineWidth ) {x=0; y = 0}
-        //     else if (x === staffLineWidth) {x = 0; y+=160}
-        //     x += 20
-        //     if (x > staffLineWidth) {x = staffLineWidth}
-            // /* else */ if (x >= 845) {dir = "BACKWARD"; window.requestAnimationFrame(loop);return}
-        // }
-        // else if (dir === "BACKWARD") {
-        //     x -= 4
-        //     if ( x < 30) dir = "FORWARD"
-        // }
-        // console.log(ANIMATION)
-    }
-        
-        if (x === 120) {
+        if (x >= 140) {
             x = 0
             i = 0
-            currentNoteDuration = 0.5
-            noteNumber = 0
             start = undefined
             return
         } 
         ctx.fillStyle = "black"
-        ctx.fillRect(startStaffX + 104.5 + x, 16 + y, 1, 99)
+        ctx.fillRect(startStaffX + offsetToFirstNote + x, offsetToFirstLine + y, 1, 99)
         window.requestAnimationFrame(loop)
     })}
 
     BUTTON.addEventListener('click', play)
 
     async function play() {
-    // const duration = [0,0.5,1,2,2.5,3,4]
-    // const song = ["F5", "E5", "D5", "C5", "G4", "E4", "C4"]
-    
-    function playSound(frequency, time, i) {
-        // console.log('here', i, Object.values(songObject)[i])
-        const osc =  SOUND.createOscillator()
-        const gainNode = SOUND.createGain()
-        osc.connect(gainNode)
-        gainNode.connect(SOUND.destination)
-        gainNode.gain.exponentialRampToValueAtTime(0.1, SOUND.currentTime + time )
-        gainNode.gain.linearRampToValueAtTime(0.00001, SOUND.currentTime + Object.values(songObject)[i] + time)
-        // gainNode.gain.linearRampToValueAtTime(0, SOUND.currentTime + time + duration)
-        osc.type = 'triangle'
-        osc.frequency.value = frequency
-        osc.start(SOUND.currentTime + time)
 
-        
-        // osc.stop(SOUND.currentTime + duration + time)
-    }
-    begin()
+
+        // |~~~~~~~~~~~~~~ -- | Sound | -- ~~~~~~~~~~~~~~| \\
+
+
+        function playSound(frequency, time, i, noteDuration) {
+            const osc =  SOUND.createOscillator()
+            const gainNode = SOUND.createGain()
+            osc.connect(gainNode)
+            gainNode.connect(SOUND.destination)
+            gainNode.gain.exponentialRampToValueAtTime(0.1, SOUND.currentTime + time )
+            gainNode.gain.linearRampToValueAtTime(0.00001, SOUND.currentTime + noteDuration + time)
+            // gainNode.gain.linearRampToValueAtTime(0, SOUND.currentTime + time + duration)
+            osc.type = 'triangle'
+            osc.frequency.value = frequency
+            osc.start(SOUND.currentTime + time)
+            // osc.stop(SOUND.currentTime + duration + time)
+        }
+
+    animateBar()
+
     for (var i = 0; i < Object.keys(songObject).length; i++) {
         console.log(Object.values(songObject).slice(0, i))
-        playSound(frequencyNoteMap[Object.keys(songObject)[i]], Object.values(songObject).slice(0, i).reduce((a,v) => a + v, 0), i)
+        let noteName = Object.keys(songObject)[i]
+        let songElapsed = Object.values(songObject).slice(0, i).reduce((a,v) => a + v, 0)
+        let noteNumber = i
+        let noteDuration = Object.values(songObject)[i]
+        playSound(frequencyNoteMap[noteName], songElapsed, noteNumber, noteDuration)
     }}
+
     main()
+
 </script>
 </html>
