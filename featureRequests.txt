@@ -10,4 +10,4 @@ DONE Synchronise the movement of the line with the sheet music and the sound out
 
 ->> Create a random sequence of notes with generating logic.
     DONE Sound and Line animation are synchronised
-    Note placement should be synchronised to make line animation linear.
+    DONE Note placement should be synchronised to make line animation linear.

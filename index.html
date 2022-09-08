@@ -19,20 +19,21 @@
 
         #sound {
             position:absolute;
-            top: 120px;
+            top: 10px;
+            left: 10px;
         }
-        /* #poppy {
-            font: "bravura";
-            font-family:bravura;
-            color:red;
-        } */
+        #randomise {
+            position: absolute;
+            top: 10px;
+            left: 200px;
+        }
     </style>
 </head>
 <body>
     <canvas id="sheet-music"></canvas>
     <canvas id="animation"></canvas>
     <button id="sound">Play Sound</button>
-    <!-- <p id="poppy">&#xE050;</p> -->
+    <button id="randomise" onClick="randomise()">Randomise</button>
 </body>
 <script>
     'use strict'
@@ -40,6 +41,20 @@
     var ANIMATION
     var SOUND = new AudioContext()
     var BUTTON = document.getElementById('sound')
+
+    const songObject = {
+    }
+
+    const songDurations = []
+    const songNoteNames = []
+
+    const noteHead = {
+        4:      `\ue0a2`,
+        2:      `\ue0a3`,
+        1:      `\ue0a4`,
+        0.5:    `\ue0a4`,
+        0.25:   `\ue0a4`
+    }
 
     const frequencyNoteMap = {
         "C0":16.05,
@@ -151,9 +166,104 @@
         "A#8/Bb8":7323.01,
         "B8":7758.46
     }
+    const offsetNoteMap = {
+        "C0":0,
+        "D0":0,
+        "E0":0,
+        "F0":0,
+        "G0":0,
+        "A0":0,
+        "B0":0,
+        "C1":0,
+        "D1":0,
+        "E1":0,
+        "F1":0,
+        "G1":0,
+        "A1":0,
+        "B1":0,
+        "C2":24,
+        "D2":23,
+        "E2":22,
+        "F2":21,
+        "G2":20,
+        "A2":19,
+        "B2":18,
+        "C3":17,
+        "D3":16,
+        "E3":15,
+        "F3":14,
+        "G3":13,
+        "A3":12,
+        "B3":11,
+        "C4":10,
+        "D4":9,
+        "E4":8,
+        "F4":7,
+        "G4":6,
+        "A4":5,
+        "B4":4,
+        "C5":3,
+        "D5":2,
+        "E5":1,
+        "F5":0,
+        "G5":-1,
+        "A5":-2,
+        "B5":-3,
+        "C6":-4,
+        "D6":-5,
+        "E6":-6,
+        "F6":-7,
+        "G6":-8,
+        "A6":-9,
+        "B6":0,
+        "C7":0,
+        "D7":0,
+        "E7":0,
+        "F7":0,
+        "G7":0,
+        "A7":0,
+        "B7":0,
+        "C8":0,
+        "D8":0,
+        "E8":0,
+        "F8":0,
+        "G8":0,
+        "A8":0,
+        "B8":0,
+    }
 
-    console.log(frequencyNoteMap)
+    const cPentatonicMajor = [
+        "C4",
+        "D4",
+        "E4",
+        "G4",
+        "A4"
+    ]
+    const cMajor = [
+        "C4",
+        "D4",
+        "E4",
+        "F4",
+        "G4",
+        "A4",
+        "B4",
+        "C5"
+    ]
 
+    const durations = [
+        0.25, 0.5, 1
+    ]
+    const bpm = 60 / 100
+    function randomise(){
+        const noteList = cMajor
+    Array(70).fill(null).forEach((v, ind) => {
+        songObject[ind] = {
+            duration: durations[Math.floor(Math.random()*durations.length)] * bpm, 
+            name: noteList[Math.floor(Math.random() * noteList.length)]}
+    })
+    main()
+    }
+    console.log(songObject, songDurations, songNoteNames)
     function main() {
         CANVAS = document.getElementById('sheet-music')
         ANIMATION = document.getElementById('animation')
@@ -165,61 +275,105 @@
         CANVAS.height = window.innerHeight
         ANIMATION.width = window.innerWidth
         ANIMATION.height = window.innerHeight
-        console.log(window.outerWidth)
-        console.log(window.innerWidth)
-        console.log(ANIMATION.width)
+        // console.log(window.outerWidth)
+        // console.log(window.innerWidth)
+        // console.log(ANIMATION.width)
+        // console.log(CANVAS.width)
         drawSheet()
     }
 
-    const songObject = {
-        "G5": 0.5,
-        "F5": 0.5,
-        "E5": 1,
-        "C5": 0.25,
-        "G4": 0.25,
-        "E4": 0.25,
-        "C4": 1
-    }
+   
+    var unitDistance = 120
+    var topLine = 50
+    var distanceBetweenStaves = 160
+
+    window.addEventListener('resize', fitToScreen)
+    var startStaffX = 40
+    var initialOffset = 100
 
     function drawSheet() {
-        var ctx = CANVAS.getContext('2d')
         var {width, height} = CANVAS
-        var startStaffX = 40
+        var ctx = CANVAS.getContext('2d')
         ctx.fillStyle = "black"
         ctx.font = "40px bravura"
-        ctx.fillText("\uE084", startStaffX + 43, 25)                                 // Time signatures  - treble
-        ctx.fillText("\uE084", startStaffX + 43, 45)
+        ctx.fillText("\uE084", startStaffX + 43, topLine + 10)                                 // Time signatures  - treble
+        ctx.fillText("\uE084", startStaffX + 43, topLine + 30)
         
-        ctx.fillText("\uE084", startStaffX + 43, 60 + 25)               //  - bass
-        ctx.fillText("\uE084", startStaffX + 43, 60 + 45)
+        ctx.fillText("\uE084", startStaffX + 43, topLine + 60 + 10)               //  - bass
+        ctx.fillText("\uE084", startStaffX + 43, topLine + 60 + 30)
 
         // |~~~~~~~~~~~~~~ -- | Note placement | -- ~~~~~~~~~~~~~~| \\
-        
-        ctx.fillText("\ue0a4", startStaffX + 100, 15.5)
-        ctx.fillText("\ue0a4", startStaffX + 100 + 20* 1, 20.5)
-        ctx.fillText("\ue0a4", startStaffX + 100 + 20* 2, 25.5)
-        ctx.fillText("\ue0a4", startStaffX + 100 + 20* 3, 30.5)
-        ctx.fillText("\ue0a4", startStaffX + 100 + 20* 4, 45.5)
-        ctx.fillText("\ue0a4", startStaffX + 100 + 20* 5, 55.5)
-        ctx.fillText("\ue0a4", startStaffX + 100 + 20* 6, 65.5)
+
+        var halfToneDistance = 5
+        var songDistance = 0
+        var totalSongDistance = 
 
         
-        ctx.fillRect(startStaffX + 210, 15 + 50,30,1) // C3 bar
-        Array(3).fill(null).forEach((v, index) => {                                     // Number of grand staves
+        Object.values(songObject).forEach((obj,noteNumber)=> {
+            const noteDuration = obj.duration
+
+
+            ctx.fillText(noteHead[obj.duration/bpm], 
+                startStaffX + initialOffset + (songDistance % (width - 2 * startStaffX- initialOffset)), 
+                topLine + 0.5 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)))
+                // console.log(obj.duration /bpm)
+            if (obj.duration / bpm <= 1) {
+                if (offsetNoteMap[obj.name] > 4) {
+                    ctx.fillRect(
+                        startStaffX + initialOffset + songDistance % (width - 2 * startStaffX- initialOffset) + 10,
+                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)),
+                        2,
+                        -30)
+                    if (obj.duration/bpm === 0.5) {
+                        ctx.fillText('\ue240', 
+                        startStaffX + initialOffset + songDistance % (width - 2 * startStaffX- initialOffset) + 10, 
+                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)) - 35)
+                    }
+                    else if (obj.duration/bpm === 0.25) {
+                        ctx.fillText('\ue242', 
+                        startStaffX + initialOffset + songDistance % (width - 2 * startStaffX- initialOffset) + 10, 
+                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)) - 35)
+                    }
+                }
+                else {
+                    ctx.fillRect(
+                        startStaffX + initialOffset + songDistance % (width - 2 * startStaffX- initialOffset),
+                        topLine + 0.5 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)),
+                        2,
+                        30)
+                    if (obj.duration/bpm === 0.5) {
+                        ctx.fillText('\ue241', startStaffX + initialOffset + songDistance % (width - 2 * startStaffX- initialOffset),
+                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)) + 35)
+                    }
+                    else if (obj.duration/bpm === 0.25) {
+                        ctx.fillText('\ue243', startStaffX + initialOffset + songDistance % (width - 2 * startStaffX- initialOffset),
+                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)) + 35)
+                    }
+                }
+            }
+            if (obj.name === "C4") {
+                ctx.fillRect(
+                    startStaffX + initialOffset + songDistance % (width - 2 * startStaffX - initialOffset) - 0.25 * 30, 
+                    topLine + halfToneDistance * offsetNoteMap["C4"] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)),30,1)      // C3 bar
+            }
+            songDistance += unitDistance * noteDuration
+            // console.log(songDistance, noteDuration, noteName, unitDistance, noteNumber, Object.values(songObject)[noteNumber])
+        })
+        
+        Array(Math.ceil(Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0) / (CANVAS.width - 2 * startStaffX- initialOffset) )).fill(null).forEach((v, index) => {                                     // Number of grand staves
             ctx.font = `100px bravura`
-            ctx.fillText("\uE000", 25, 115 + 160 * index)               // Staff Bracket
+            ctx.fillText("\uE000", 25, topLine + 100 + distanceBetweenStaves * index)               // Staff Bracket
             ctx.font = "40px bravura"
-            ctx.fillText("\uE050", startStaffX + 10, 45 + 160 * index)  // Treble Clef
-            ctx.fillText(`\ue062`, startStaffX + 10,85.5 + 160 * index) // Bass Clef    
+            ctx.fillText("\uE050", startStaffX + 10, topLine + 30 + distanceBetweenStaves * index)  // Treble Clef
+            ctx.fillText(`\ue062`, startStaffX + 10,topLine + 70.5 + distanceBetweenStaves * index) // Bass Clef    
             Array(2).fill(null).forEach((v, ind) => {                                   // Treble and Bass staves
-                ctx.fillRect(startStaffX + 10,15 + 50 + 160*index,30,1) // C3 bar
+                ctx.fillRect(startStaffX + 10,topLine + 50 + distanceBetweenStaves*index,30,1) // C3 bar
                 
-                ctx.fillRect(startStaffX,15 + 160 * index,2,100)        // Start Staff
-                ctx.fillRect(startStaffX + 870,15 + 160 * index,2,101)  // End staff
+                ctx.fillRect(startStaffX,topLine + distanceBetweenStaves * index,2,100)        // Start Staff
+                ctx.fillRect(width - startStaffX,topLine + distanceBetweenStaves * index,2,101)  // End staff
 
-                
                 Array(5).fill(null).forEach( (v,i) =>                                   // Staff lines
-                    ctx.fillRect(startStaffX, (15) + 10 * i + 60 * ind + 160 * index, 871, 1) )
+                    ctx.fillRect(startStaffX, (topLine) + 10 * i + 60 * ind + distanceBetweenStaves * index, width - 2 * startStaffX, 1) )
         }) })
 
 
@@ -243,6 +397,8 @@
 
     function animateBar() {
         let i = 0
+        // const unitDistance = 80
+        var songDistance = 0
     window.requestAnimationFrame(function loop(timestamp) {
         if (start === undefined) {
             start = timestamp
@@ -250,27 +406,34 @@
         const elapsed = timestamp - start
         // Dynamic line movement, based on duration of note and distance to next note
         
-        if (x >= 20 * (i + 1)) i++
-        const songElapsed = Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0) * 1000
+        if (x >= Object.values(songObject).slice(0,i).reduce((a,obj) => a + obj.duration * unitDistance, 0) % (CANVAS.width - 2 * startStaffX- initialOffset)
+         && i <  Object.values(songObject).length - 1) i++
+        const songElapsed = Object.values(songObject).slice(0,i).reduce((a,v) => a + v.duration, 0) * 1000
         const noteElapsed = elapsed - songElapsed
-        const noteDuration = Object.values(songObject)[i]
-        x = i * 20 + (noteElapsed*0.001/noteDuration) * 20
-       
-        var staffLineWidth = 870
-        var startStaffX = 40
-        var offsetToFirstNote = 104.5
-        var offsetToFirstLine = 16
+        const noteDuration = songObject[i].duration
+        songDistance = Object.values(songObject).slice(0,i).reduce((a,obj) => a + obj.duration * unitDistance, 0)
+        x = songDistance % (CANVAS.width - 2 * startStaffX- initialOffset) + (noteElapsed*0.001/noteDuration) * unitDistance * noteDuration
+        var offsetToFirstLine = topLine + 1
         var ctx = ANIMATION.getContext('2d')
+        
         ctx.clearRect(0, 0, ANIMATION.width, ANIMATION.height)
         
-        if (x >= 140) {
+        console.log(y, Math.floor(songDistance / (CANVAS.width - 2* startStaffX - initialOffset)), songDistance)
+        y = distanceBetweenStaves * Math.floor(songDistance / (CANVAS.width - 2* startStaffX - initialOffset))
+        if (x >= Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)% (CANVAS.width - 2 * startStaffX- initialOffset)
+         && y ===  160 * Math.floor(Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0) / (CANVAS.width - 2 * startStaffX- initialOffset) )) {
             x = 0
             i = 0
+            songDistance = 0
             start = undefined
             return
         } 
         ctx.fillStyle = "black"
-        ctx.fillRect(startStaffX + offsetToFirstNote + x, offsetToFirstLine + y, 1, 99)
+        ctx.fillRect(
+            startStaffX + initialOffset + 5.5 + x, 
+            offsetToFirstLine + y, 
+            1, 
+            99)
         window.requestAnimationFrame(loop)
     })}
 
@@ -299,15 +462,14 @@
     animateBar()
 
     for (var i = 0; i < Object.keys(songObject).length; i++) {
-        console.log(Object.values(songObject).slice(0, i))
-        let noteName = Object.keys(songObject)[i]
-        let songElapsed = Object.values(songObject).slice(0, i).reduce((a,v) => a + v, 0)
-        let noteNumber = i
-        let noteDuration = Object.values(songObject)[i]
+        const noteName = songObject[i].name
+        const noteNumber = i
+        const noteDuration = songObject[i].duration
+        const songElapsed = Object.values(songObject).slice(0,i).reduce((acc, obj)=> acc + obj.duration, 0)
         playSound(frequencyNoteMap[noteName], songElapsed, noteNumber, noteDuration)
     }}
 
-    main()
+    randomise()
 
 </script>
 </html>
