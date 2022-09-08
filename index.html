@@ -255,7 +255,7 @@
     ]
     const bpm = 60 / 100
     function randomise(){
-        const noteList = cMajor
+        const noteList = cPentatonicMajor
     Array(70).fill(null).forEach((v, ind) => {
         songObject[ind] = {
             duration: durations[Math.floor(Math.random()*durations.length)] * bpm, 
@@ -275,10 +275,6 @@
         CANVAS.height = window.innerHeight
         ANIMATION.width = window.innerWidth
         ANIMATION.height = window.innerHeight
-        // console.log(window.outerWidth)
-        // console.log(window.innerWidth)
-        // console.log(ANIMATION.width)
-        // console.log(CANVAS.width)
         drawSheet()
     }
 
@@ -286,11 +282,12 @@
     var unitDistance = 120
     var topLine = 50
     var distanceBetweenStaves = 160
-
-    window.addEventListener('resize', fitToScreen)
     var startStaffX = 40
     var initialOffset = 100
-
+    var barWidth = window.innerWidth - 2 * startStaffX - initialOffset
+    
+    window.addEventListener('resize', fitToScreen)
+    
     function drawSheet() {
         var {width, height} = CANVAS
         var ctx = CANVAS.getContext('2d')
@@ -303,64 +300,62 @@
         ctx.fillText("\uE084", startStaffX + 43, topLine + 60 + 30)
 
         // |~~~~~~~~~~~~~~ -- | Note placement | -- ~~~~~~~~~~~~~~| \\
-
+        
         var halfToneDistance = 5
         var songDistance = 0
-        var totalSongDistance = 
-
+        var totalSongDistance = Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
         
         Object.values(songObject).forEach((obj,noteNumber)=> {
             const noteDuration = obj.duration
+            const durationUnit = obj.duration / bpm
 
 
-            ctx.fillText(noteHead[obj.duration/bpm], 
-                startStaffX + initialOffset + (songDistance % (width - 2 * startStaffX- initialOffset)), 
-                topLine + 0.5 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)))
-                // console.log(obj.duration /bpm)
-            if (obj.duration / bpm <= 1) {
+            ctx.fillText(noteHead[durationUnit], 
+                startStaffX + initialOffset + (songDistance % barWidth), 
+                topLine + 0.5 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth))
+            if (durationUnit <= 1) {
                 if (offsetNoteMap[obj.name] > 4) {
                     ctx.fillRect(
-                        startStaffX + initialOffset + songDistance % (width - 2 * startStaffX- initialOffset) + 10,
-                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)),
+                        startStaffX + initialOffset + songDistance % barWidth + 10,
+                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth),
                         2,
                         -30)
-                    if (obj.duration/bpm === 0.5) {
+                    if (durationUnit === 0.5) {
                         ctx.fillText('\ue240', 
-                        startStaffX + initialOffset + songDistance % (width - 2 * startStaffX- initialOffset) + 10, 
-                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)) - 35)
+                        startStaffX + initialOffset + songDistance % barWidth + 10, 
+                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth) - 35)
                     }
-                    else if (obj.duration/bpm === 0.25) {
+                    else if (durationUnit === 0.25) {
                         ctx.fillText('\ue242', 
-                        startStaffX + initialOffset + songDistance % (width - 2 * startStaffX- initialOffset) + 10, 
-                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)) - 35)
+                        startStaffX + initialOffset + songDistance % barWidth + 10, 
+                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth) - 35)
                     }
                 }
                 else {
                     ctx.fillRect(
-                        startStaffX + initialOffset + songDistance % (width - 2 * startStaffX- initialOffset),
-                        topLine + 0.5 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)),
+                        startStaffX + initialOffset + songDistance % barWidth,
+                        topLine + 0.5 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth),
                         2,
                         30)
-                    if (obj.duration/bpm === 0.5) {
-                        ctx.fillText('\ue241', startStaffX + initialOffset + songDistance % (width - 2 * startStaffX- initialOffset),
-                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)) + 35)
+                    if (durationUnit === 0.5) {
+                        ctx.fillText('\ue241', startStaffX + initialOffset + songDistance % barWidth,
+                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth) + 35)
                     }
-                    else if (obj.duration/bpm === 0.25) {
-                        ctx.fillText('\ue243', startStaffX + initialOffset + songDistance % (width - 2 * startStaffX- initialOffset),
-                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)) + 35)
+                    else if (durationUnit === 0.25) {
+                        ctx.fillText('\ue243', startStaffX + initialOffset + songDistance % barWidth,
+                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth) + 35)
                     }
                 }
             }
             if (obj.name === "C4") {
                 ctx.fillRect(
                     startStaffX + initialOffset + songDistance % (width - 2 * startStaffX - initialOffset) - 0.25 * 30, 
-                    topLine + halfToneDistance * offsetNoteMap["C4"] + distanceBetweenStaves * Math.floor(songDistance / (width - 2* startStaffX - initialOffset)),30,1)      // C3 bar
+                    topLine + halfToneDistance * offsetNoteMap["C4"] + distanceBetweenStaves * Math.floor(songDistance / barWidth),30,1)      // C3 bar
             }
             songDistance += unitDistance * noteDuration
-            // console.log(songDistance, noteDuration, noteName, unitDistance, noteNumber, Object.values(songObject)[noteNumber])
         })
-        
-        Array(Math.ceil(Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0) / (CANVAS.width - 2 * startStaffX- initialOffset) )).fill(null).forEach((v, index) => {                                     // Number of grand staves
+        console.log(Math.ceil(totalSongDistance))
+        Array(Math.ceil(totalSongDistance/barWidth)).fill(null).forEach((v, index) => {                                     // Number of grand staves
             ctx.font = `100px bravura`
             ctx.fillText("\uE000", 25, topLine + 100 + distanceBetweenStaves * index)               // Staff Bracket
             ctx.font = "40px bravura"
@@ -376,14 +371,6 @@
                     ctx.fillRect(startStaffX, (topLine) + 10 * i + 60 * ind + distanceBetweenStaves * index, width - 2 * startStaffX, 1) )
         }) })
 
-
-        // ctx.fillRect(9,15,2,40)
-        // ctx.fillRect(5,75,2,40)
-        // ctx.fillRect(9,75,2,40)
-        
-        // console.log(ctx.font)
-        // ctx.fillRect(50, 15, 1, 140)
-        
     }
     var x = 0
     var y = 0
@@ -408,20 +395,26 @@
         
         if (x >= Object.values(songObject).slice(0,i).reduce((a,obj) => a + obj.duration * unitDistance, 0) % (CANVAS.width - 2 * startStaffX- initialOffset)
          && i <  Object.values(songObject).length - 1) i++
+
         const songElapsed = Object.values(songObject).slice(0,i).reduce((a,v) => a + v.duration, 0) * 1000
         const noteElapsed = elapsed - songElapsed
         const noteDuration = songObject[i].duration
         songDistance = Object.values(songObject).slice(0,i).reduce((a,obj) => a + obj.duration * unitDistance, 0)
+        
         x = songDistance % (CANVAS.width - 2 * startStaffX- initialOffset) + (noteElapsed*0.001/noteDuration) * unitDistance * noteDuration
+
         var offsetToFirstLine = topLine + 1
+        var totalSongDistance = Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
+
+
         var ctx = ANIMATION.getContext('2d')
         
         ctx.clearRect(0, 0, ANIMATION.width, ANIMATION.height)
         
-        console.log(y, Math.floor(songDistance / (CANVAS.width - 2* startStaffX - initialOffset)), songDistance)
-        y = distanceBetweenStaves * Math.floor(songDistance / (CANVAS.width - 2* startStaffX - initialOffset))
-        if (x >= Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)% (CANVAS.width - 2 * startStaffX- initialOffset)
-         && y ===  160 * Math.floor(Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0) / (CANVAS.width - 2 * startStaffX- initialOffset) )) {
+        // console.log(y, Math.floor(songDistance / barWidth), songDistance)
+        y = distanceBetweenStaves * Math.floor(songDistance / barWidth)
+        if (x >= totalSongDistance % barWidth
+         && y ===  160 * Math.floor(totalSongDistance / barWidth )) {
             x = 0
             i = 0
             songDistance = 0
