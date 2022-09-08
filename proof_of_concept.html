@@ -220,53 +220,34 @@
     var dir = "FORWARD"
     var start, previousTimeStamp
     var done = false
-    // var currentNoteDuration = 0.5
-    // var noteNumber = 0
-    const songObject = {
-        "F5": 0.5,
-        "E5": 0.5,
-        "D5": 1,
-        "C5": 0.5,
-        "G4": 0.5,
-        "E4": 1,
-        "C4": 1
-    }
+    var currentNoteDuration = 0.5
+    var noteNumber = 0
     function begin() {
-        let i = 0
-
-
     window.requestAnimationFrame(function loop(timestamp) {
         if (start === undefined) {
             start = timestamp
         }
         let elapsed = timestamp - start
         // Dynamic line movement, based on duration of note and distance to next note
-        // if      (x >= (20 * i)) {currentNoteDuration = Object.values(songObject)[i];   noteNumber = i; elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)}
-        // else if (x >= (20 * i)) {currentNoteDuration = Object.values(songObject)[i];   noteNumber = i; elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)}
-        // else if (x >= (20 * i)) {currentNoteDuration = Object.values(songObject)[i];   noteNumber = i; elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)}
-        // else if (x >= (20 * i)) {currentNoteDuration = Object.values(songObject)[i];   noteNumber = i; elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)}
-        // else if (x >= (20 * i)) {currentNoteDuration = Object.values(songObject)[i];   noteNumber = i; elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)}
-        // else if (x >= (20 * i)) {currentNoteDuration = Object.values(songObject)[i];   noteNumber = i; elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)}
-        // elapsed -= Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)
-        // currentNoteDuration = Object.values(songObject)[i]
-        // noteNumber = i
-        if (x >= 20 + 20 * i) {
-            i++
-            // currentNoteDuration = Object.values(songObject)[i]
-            // noteElapsed = elapsed - Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0)*1000
-        }
-        noteElapsed = elapsed - Object.values(songObject).slice(0,i).reduce((a,v) => a + v, 0) * 1000
-
+        if      (x >= (20 * 5)) {currentNoteDuration = 1;      noteNumber = 5; elapsed -= 3000; console.log(5)}
+        else if (x >= (20 * 4)) {currentNoteDuration = 0.5 ;   noteNumber = 4; elapsed -= 2500; console.log(4)}
+        else if (x >= (20 * 3)) {currentNoteDuration = 0.5 ;   noteNumber = 3; elapsed -= 2000; console.log(3)}
+        else if (x >= (20 * 2)) {currentNoteDuration = 1;      noteNumber = 2; elapsed -= 1000; console.log(2, elapsed)}
+        else if (x >= (20 * 1)) {currentNoteDuration = 0.5 ;   noteNumber = 1; elapsed -= 500; console.log(1, elapsed)}
+        else if (x >= (20 * 0)) {currentNoteDuration = 0.5 ;   noteNumber = 0; elapsed -= 0; console.log(0, elapsed)}
         if (previousTimeStamp !== timestamp) {
-            if (Object.values(songObject)[i] === 1){
-                x = i * 20 + Math.min(noteElapsed*0.001, 1)/0.05
-                // console.log("Math.min(elapsed*0.001, 1)/0.05", x)
+            if (currentNoteDuration === 1){
+                x = noteNumber * 20 + Math.min(elapsed*0.001, 1)/0.05
+                console.log(Math.min(elapsed*0.001, 1)/0.05)
             }
-            else if (Object.values(songObject)[i] === 0.5){
-                x = i * 20 + Math.min(noteElapsed*0.001, 1)/0.025
-                // console.log('half', x)
+            else if (currentNoteDuration === 0.5){
+                console.log(Math.min(elapsed*0.001, 1)/0.025, 'half')
+                x = noteNumber * 20 + Math.min(elapsed*0.001, 1)/0.025
             }
         }
+            
+
+        const duration = [0,0.5,1,2,2.5,3,4]
         var staffLineWidth = 870
         var startStaffX = 40
         var ctx = ANIMATION.getContext('2d')
@@ -290,7 +271,6 @@
         
         if (x === 120) {
             x = 0
-            i = 0
             currentNoteDuration = 0.5
             noteNumber = 0
             start = undefined
@@ -304,17 +284,25 @@
     BUTTON.addEventListener('click', play)
 
     async function play() {
-    // const duration = [0,0.5,1,2,2.5,3,4]
-    // const song = ["F5", "E5", "D5", "C5", "G4", "E4", "C4"]
-    
-    function playSound(frequency, time, i) {
-        // console.log('here', i, Object.values(songObject)[i])
+    const duration = [0,0.5,1,2,2.5,3,4]
+    const song = ["F5", "E5", "D5", "C5", "G4", "E4", "C4"]
+    const songObject = {
+        "F5": 0.5,
+        "E5": 0.5,
+        "D5": 1,
+        "C5": 0.5,
+        "G4": 0.5,
+        "E4": 1,
+        "C4": 1
+    }
+    function playSound(frequency, time) {
+        // console.log('here', frequency, time, duration, SOUND.currentTime + time)
         const osc =  SOUND.createOscillator()
         const gainNode = SOUND.createGain()
         osc.connect(gainNode)
         gainNode.connect(SOUND.destination)
         gainNode.gain.exponentialRampToValueAtTime(0.1, SOUND.currentTime + time )
-        gainNode.gain.linearRampToValueAtTime(0.00001, SOUND.currentTime + Object.values(songObject)[i] + time)
+        gainNode.gain.linearRampToValueAtTime(0.00001, SOUND.currentTime + 1 + time)
         // gainNode.gain.linearRampToValueAtTime(0, SOUND.currentTime + time + duration)
         osc.type = 'triangle'
         osc.frequency.value = frequency
@@ -324,10 +312,13 @@
         // osc.stop(SOUND.currentTime + duration + time)
     }
     begin()
-    for (var i = 0; i < Object.keys(songObject).length; i++) {
-        console.log(Object.values(songObject).slice(0, i))
-        playSound(frequencyNoteMap[Object.keys(songObject)[i]], Object.values(songObject).slice(0, i).reduce((a,v) => a + v, 0), i)
+    for (var i = 0; i < song.length; i++) {
+            playSound(frequencyNoteMap[song[i]], duration[i])
     }}
+    // let f = new FontFace('bravura', 'url(/fonts/Bravura_stripped.woff2)')
+    // f.load().then((loaded)=> {
+        
+    // main() })
     main()
 </script>
 </html>

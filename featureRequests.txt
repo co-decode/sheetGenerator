@@ -1,4 +1,4 @@
-->> Get some sounds working. Follow this tutorial: https://www.youtube.com/watch?v=JNtuLw2fybo
+DONE Get some sounds working. Follow this tutorial: https://www.youtube.com/watch?v=JNtuLw2fybo
 
     ALSO watch this: https://www.youtube.com/watch?v=VXWvfrmpapI
 
@@ -6,6 +6,6 @@
 
 DONE Make a moving line with the Rect tool
 
-Synchronise the movement of the line with the sheet music and the sound output
+DONE Synchronise the movement of the line with the sheet music and the sound output
 
-Create a random sequence of notes with generating logic.
+->> Create a random sequence of notes with generating logic.
