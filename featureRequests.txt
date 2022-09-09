@@ -15,3 +15,5 @@ DONE Create a random sequence of notes with generating logic.
 Make the notes fit into bars
 
 Clean up the conditionals determining the note bars and note tails.
+
+Wrap the drawing, the sound and the animation with one function so that variables can be distributed amongst all of them.
