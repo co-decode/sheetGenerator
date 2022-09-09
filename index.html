@@ -258,11 +258,17 @@
         "G5"
     ]
 
-    const durations = [
-        0.25, 0.5, 1
+    let durations = [
+        0.25, 0.5, 1, 2
     ]
     const bpm = 60 / 60
-    var unitDistance = 120
+    var topLine = 50
+    var distanceBetweenStaves = 160
+    var startStaffX = 40
+    var initialOffset = 100
+    var bufferToEnd = 20
+    var barWidth = window.innerWidth - 2 * startStaffX - initialOffset - bufferToEnd
+    var unitDistance = barWidth/8
 
     function randomise(){
         const noteList = cMajor
@@ -271,19 +277,29 @@
         let index = 0
         Object.keys(songObject).forEach(noteNumber => delete songObject[noteNumber])
         
-        Array(2).fill(null).forEach((nothing, measure) => {                 // Number of Musical Measures
+        Array(4).fill(null).forEach((nothing, measure) => {                 // Number of Musical Measures
         while (currentDistance < timeSignature * unitDistance) {
             const noteLengthUnit = durations[Math.floor(Math.random()*durations.length)]
     
-            if (noteLengthUnit * unitDistance + currentDistance > timeSignature * unitDistance) continue
+            /* if (noteLengthUnit * unitDistance + currentDistance > timeSignature * unitDistance) {
+                let distanceLeft = timeSignature * unitDistance - currentDistance
+                durations = durations.filter(dur => dur * unitDistance < distanceLeft)
+                continue
+            } */
             songObject[index] = {
                 duration: noteLengthUnit * bpm, 
                 name: noteList[Math.floor(Math.random() * noteList.length)]
             }
+
             currentDistance += noteLengthUnit * unitDistance
+            const distanceLeft = timeSignature * unitDistance - currentDistance
+            if (durations.at(-1)*unitDistance > distanceLeft){
+                durations = durations.filter(dur => dur * unitDistance <= distanceLeft)
+            }
             index++
         }
         currentDistance = 0
+        durations = [0.25, 0.5, 1, 2]
 
     })
     // console.log(songObject)
@@ -304,18 +320,13 @@
     }
     function fitToScreen() {
         CANVAS.width = window.innerWidth
-        CANVAS.height = window.innerHeight
+        CANVAS.height = window.innerHeight * 2
         ANIMATION.width = window.innerWidth
-        ANIMATION.height = window.innerHeight
+        ANIMATION.height = window.innerHeight * 2
         drawSheet()
     }
    
-    var topLine = 50
-    var distanceBetweenStaves = 160
-    var startStaffX = 40
-    var initialOffset = 100
-    var bufferToEnd = 20
-    var barWidth = window.innerWidth - 2 * startStaffX - initialOffset - bufferToEnd
+    
     
     window.addEventListener('resize', fitToScreen)
     
@@ -334,16 +345,19 @@
         
         var halfToneDistance = 5
         var songDistance = 0        // The number of pixels from the start to the current note
+        var songLineDistance = 0
         var totalSongDistance = Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
+        var numberOfStaves = Math.ceil(totalSongDistance/barWidth)
         
         Object.values(songObject).forEach((obj,noteNumber)=> {
             const noteDuration = obj.duration
             const durationUnit = obj.duration / bpm
-
+            
+            
             ctx.fillText(noteHead[durationUnit],// Draw note head
-                startStaffX + initialOffset + (songDistance % barWidth), 
+                startStaffX + initialOffset + songLineDistance, 
                 topLine + 0.5 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth))
-            if (durationUnit <= 1) {            // Draw note bars and tails
+            if (durationUnit <= 2) {            // Draw note bars and tails
                 if (offsetNoteMap[obj.name] > 4) {
                     ctx.fillRect(
                         startStaffX + initialOffset + songDistance % barWidth + 10,
@@ -384,10 +398,12 @@
                     30,
                     1)      
             }
+            if (songLineDistance + unitDistance * noteDuration >= barWidth) songLineDistance = 0
+            else songLineDistance += unitDistance * noteDuration
             songDistance += unitDistance * noteDuration
         })
         // console.log(Math.ceil(totalSongDistance))
-        Array(Math.ceil(totalSongDistance/barWidth)).fill(null).forEach((v, index) => {                                     // Number of grand staves
+        Array(numberOfStaves).fill(null).forEach((v, index) => {                                     // Number of grand staves
             ctx.font = `100px bravura`
             ctx.fillText("\uE000", 25, topLine + 100 + distanceBetweenStaves * index)               // Staff Bracket
             ctx.font = "40px bravura"
@@ -416,37 +432,52 @@
 
     function animateBar() {
         let i = 0
-        // const unitDistance = 80
         var songDistance = 0
+        var currentStaff = 0
     window.requestAnimationFrame(function loop(timestamp) {
         if (start === undefined) {
             start = timestamp
         }
         const elapsed = timestamp - start
         // Dynamic line movement, based on duration of note and distance to next note
-        
-        if (x >= Object.values(songObject).slice(0,i).reduce((a,obj) => a + obj.duration * unitDistance, 0) % barWidth
-         && i <  Object.values(songObject).length - 1) i++
 
-        const songElapsed = Object.values(songObject).slice(0,i).reduce((a,v) => a + v.duration, 0) * 1000
-        const noteElapsed = elapsed - songElapsed
-        const noteDuration = songObject[i].duration
-        songDistance = Object.values(songObject).slice(0,i).reduce((a,obj) => a + obj.duration * unitDistance, 0)
+        const totalTimeWhenNextNotePlayed = Object.values(songObject).slice(0,i).reduce((a,v) => a + v.duration, 0) * unitDistance
+        // console.log(currentStaff, i)
+        if (x + barWidth * currentStaff >= Object.values(songObject).slice(0,i).reduce((a,v) => a + v.duration, 0) * unitDistance
+         && i <  Object.values(songObject).length - 1) i++
         
-        x = songDistance % barWidth + (noteElapsed*0.001/noteDuration) * unitDistance * noteDuration
+        const durationOfNotesPlayed = Object.values(songObject).slice(0,i-1).reduce((a,v) => a + v.duration, 0) * 1000
+        const noteElapsed = elapsed - durationOfNotesPlayed
+        const noteDuration = songObject[i-1].duration
+        // console.log(noteDuration, durationOfNotesPlayed)
+        songDistance = Object.values(songObject).slice(0,i).reduce((a,obj) => a + obj.duration * unitDistance, 0)
+
+        
+        x = (durationOfNotesPlayed*0.001 * unitDistance) % (barWidth) + (noteElapsed*0.001/noteDuration) * unitDistance * noteDuration
+        // console.log(x.toFixed(1), ((noteElapsed*0.001/noteDuration)*unitDistance*noteDuration).toFixed(1), (durationOfNotesPlayed + noteElapsed).toFixed(0), i)
+        
+
 
         var offsetToFirstLine = topLine + 1
         var totalSongDistance = Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
-
-
+        
+        
         var ctx = ANIMATION.getContext('2d')
         
         ctx.clearRect(0, 0, ANIMATION.width, ANIMATION.height)
         
-        // console.log(y, Math.floor(songDistance / barWidth), songDistance)
-        y = distanceBetweenStaves * Math.floor(songDistance / barWidth)
-        if (x >= totalSongDistance % barWidth
-         && y ===  160 * Math.floor(totalSongDistance / barWidth )) {
+        const numberOfStaves = Math.ceil(totalSongDistance/(barWidth))
+
+        currentStaff = Math.floor(((durationOfNotesPlayed + noteElapsed + 26)*0.001 * unitDistance) / (barWidth))
+            // SMUDGE factor, that 26 is looking 26 milliseconds into the future to determine whether the bar is within 26 milliseconds of the next line's first note. Why 26 ? Not sure, I think and hope that it is just javascript's refresh rate, hopefully it is NOT my buffer end length or my 0.25 ending note... 'cause I can't wrap my head around either of those.
+            // 26 milliseconds = 0.026 * unitDistance, unitDistance = 1 beat in pixels, bpm = 30, so 2 seconds per beat, 0.026/2 beats, === 0.013 pixels, Almost certainly nothing to do with the bugger or the ending note
+            // logging shows that there is a 16 to 17 ms window between each call, that is 1 / 60th of a second: the framerate.
+        
+        y = distanceBetweenStaves * Math.floor((durationOfNotesPlayed*0.001 * unitDistance) / (barWidth))
+
+        console.log(totalSongDistance%barWidth, Math.floor(totalSongDistance / barWidth))
+        if (x >= (totalSongDistance % (barWidth) || barWidth)
+        && y ===  160 * (numberOfStaves - 1)) {
             x = 0
             i = 0
             songDistance = 0
@@ -459,6 +490,7 @@
             offsetToFirstLine + y, 
             1, 
             99)
+            // if (y === 2 * 160) return
         window.requestAnimationFrame(loop)
     })}
 

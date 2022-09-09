@@ -12,8 +12,10 @@ DONE Create a random sequence of notes with generating logic.
     DONE Sound and Line animation are synchronised
     DONE Note placement should be synchronised to make line animation linear.
 
-Make the notes fit into bars
+DONE Make the notes fit into bars
 
-Clean up the conditionals determining the note bars and note tails.
+... Clean up the conditionals determining the note bars and note tails.
+
+Clean the bpm
 
 Wrap the drawing, the sound and the animation with one function so that variables can be distributed amongst all of them.
