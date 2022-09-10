@@ -16,6 +16,23 @@ DONE Make the notes fit into bars
 
 ... Clean up the conditionals determining the note bars and note tails.
 
-Clean the bpm
+DONE Clean the bpm
 
-Wrap the drawing, the sound and the animation with one function so that variables can be distributed amongst all of them.
+NO Wrap the drawing, the sound and the animation with one function so that variables can be distributed amongst all of them.
+    - Can't see the utility in this right now, just seems like I'd be createing deeper layers of scoping for no reason.
+
+DONE Want the drawing to wrap itself properly
+
+0.5 and 0.25 should join with each other when adjacent according to pulse
+
+DONE - many improvements to come, like responsiveness to differing measure widths... A line should be drawn between the measures
+
+DONE I want to be able to call a stop to the play back and animation with the click of a button.
+    Still need to call stop.
+    Should only be able to click play once whilst in play through
+
+Figure out how to scroll the canvas without changing the canvas size
+
+Make the graphics scalable
+
+Perhaps there should be a minimum bar size, or 0.25 spacing distance.

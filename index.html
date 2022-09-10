@@ -32,6 +32,11 @@
             top: 10px;
             left: 400px;
         }
+        #pause {
+            position: absolute;
+            top: 10px;
+            left: 600px;
+        }
     </style>
 </head>
 <body>
@@ -39,6 +44,7 @@
     <canvas id="animation"></canvas>
     <button id="sound">Play Sound</button>
     <button id="randomise" onClick="randomise()">Randomise</button>
+    <button id="pause" onClick="pausePlayback()">Pause</button>
     <div id="distance"></div>
 </body>
 <script>
@@ -171,20 +177,20 @@
         "B8":7758.46
     }
     const offsetNoteMap = {
-        "C0":0,
-        "D0":0,
-        "E0":0,
-        "F0":0,
-        "G0":0,
-        "A0":0,
-        "B0":0,
-        "C1":0,
-        "D1":0,
-        "E1":0,
-        "F1":0,
-        "G1":0,
-        "A1":0,
-        "B1":0,
+        "C0":38,
+        "D0":37,
+        "E0":36,
+        "F0":35,
+        "G0":34,
+        "A0":33,
+        "B0":32,
+        "C1":31,
+        "D1":30,
+        "E1":29,
+        "F1":28,
+        "G1":27,
+        "A1":26,
+        "B1":25,
         "C2":24,
         "D2":23,
         "E2":22,
@@ -219,16 +225,16 @@
         "F6":-7,
         "G6":-8,
         "A6":-9,
-        "B6":0,
-        "C7":0,
-        "D7":0,
-        "E7":0,
-        "F7":0,
-        "G7":0,
-        "A7":0,
-        "B7":0,
-        "C8":0,
-        "D8":0,
+        "B6":-10,
+        "C7":-11,
+        "D7":-12,
+        "E7":-13,
+        "F7":-14,
+        "G7":-15,
+        "A7":-16,
+        "B7":-17,
+        "C8":-18,
+        "D8":-19,
         "E8":0,
         "F8":0,
         "G8":0,
@@ -261,40 +267,42 @@
     let durations = [
         0.25, 0.5, 1, 2
     ]
-    const bpm = 60 / 60
+    const bpm = 120  
+    const numberOfMeasures = 3
+    const timeSignatureBeats = 4
+    // timeSignatureUnit = 4
+    const secondsPerBeat = 60 / bpm         
     var topLine = 50
     var distanceBetweenStaves = 160
     var startStaffX = 40
     var initialOffset = 100
     var bufferToEnd = 20
-    var barWidth = window.innerWidth - 2 * startStaffX - initialOffset - bufferToEnd
-    var unitDistance = barWidth/8
+    var barWidth = (window.innerWidth - 2 * startStaffX - initialOffset - bufferToEnd)
+    const numberOfMeasuresPerBar = 2
+    const numberOfBeatsPerBar = numberOfMeasuresPerBar * timeSignatureBeats
+    var unitDistance = barWidth / (numberOfBeatsPerBar * secondsPerBeat)
 
     function randomise(){
         const noteList = cMajor
-        const timeSignature = 4
         let currentDistance = 0
         let index = 0
         Object.keys(songObject).forEach(noteNumber => delete songObject[noteNumber])
         
-        Array(4).fill(null).forEach((nothing, measure) => {                 // Number of Musical Measures
-        while (currentDistance < timeSignature * unitDistance) {
+        Array(numberOfMeasures).fill(null).forEach((nothing, measure) => {                 // Number of Musical Measures
+        while (currentDistance < timeSignatureBeats) {
             const noteLengthUnit = durations[Math.floor(Math.random()*durations.length)]
+            // console.log(durations, noteLengthUnit, secondsPerBeat)
     
-            /* if (noteLengthUnit * unitDistance + currentDistance > timeSignature * unitDistance) {
-                let distanceLeft = timeSignature * unitDistance - currentDistance
-                durations = durations.filter(dur => dur * unitDistance < distanceLeft)
-                continue
-            } */
             songObject[index] = {
-                duration: noteLengthUnit * bpm, 
+                duration: noteLengthUnit * secondsPerBeat, 
                 name: noteList[Math.floor(Math.random() * noteList.length)]
             }
 
-            currentDistance += noteLengthUnit * unitDistance
-            const distanceLeft = timeSignature * unitDistance - currentDistance
-            if (durations.at(-1)*unitDistance > distanceLeft){
-                durations = durations.filter(dur => dur * unitDistance <= distanceLeft)
+            currentDistance += noteLengthUnit       
+            const distanceLeft = timeSignatureBeats - currentDistance
+            // console.log("distance Left", distanceLeft, typeof currentDistance)
+            if (durations.at(-1) > distanceLeft){              // Cut out notes which would exceed bar length
+                durations = durations.filter(dur => dur <= distanceLeft)
             }
             index++
         }
@@ -323,6 +331,8 @@
         CANVAS.height = window.innerHeight * 2
         ANIMATION.width = window.innerWidth
         ANIMATION.height = window.innerHeight * 2
+        barWidth = window.innerWidth - 2 * startStaffX - initialOffset - bufferToEnd
+        unitDistance = barWidth / (numberOfBeatsPerBar * secondsPerBeat) 
         drawSheet()
     }
    
@@ -345,17 +355,18 @@
         
         var halfToneDistance = 5
         var songDistance = 0        // The number of pixels from the start to the current note
-        var songLineDistance = 0
-        var totalSongDistance = Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
+        // var songLineDistance = 0
+        var totalSongDistance = Object.values(songObject).reduce((a,obj) =>
+            a + obj.duration * unitDistance, 0)
         var numberOfStaves = Math.ceil(totalSongDistance/barWidth)
+
         
         Object.values(songObject).forEach((obj,noteNumber)=> {
             const noteDuration = obj.duration
-            const durationUnit = obj.duration / bpm
-            
+            const durationUnit = obj.duration / secondsPerBeat
             
             ctx.fillText(noteHead[durationUnit],// Draw note head
-                startStaffX + initialOffset + songLineDistance, 
+                startStaffX + initialOffset + songDistance % barWidth, 
                 topLine + 0.5 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth))
             if (durationUnit <= 2) {            // Draw note bars and tails
                 if (offsetNoteMap[obj.name] > 4) {
@@ -398,47 +409,66 @@
                     30,
                     1)      
             }
-            if (songLineDistance + unitDistance * noteDuration >= barWidth) songLineDistance = 0
-            else songLineDistance += unitDistance * noteDuration
+            
             songDistance += unitDistance * noteDuration
         })
         // console.log(Math.ceil(totalSongDistance))
+        // console.log(numberOfStaves, numberOfBeatsPerBar / timeSignatureBeats)
         Array(numberOfStaves).fill(null).forEach((v, index) => {                                     // Number of grand staves
             ctx.font = `100px bravura`
             ctx.fillText("\uE000", 25, topLine + 100 + distanceBetweenStaves * index)               // Staff Bracket
             ctx.font = "40px bravura"
             ctx.fillText("\uE050", startStaffX + 10, topLine + 30 + distanceBetweenStaves * index)  // Treble Clef
-            ctx.fillText(`\ue062`, startStaffX + 10,topLine + 70.5 + distanceBetweenStaves * index) // Bass Clef    
+            ctx.fillText(`\ue062`, startStaffX + 10,topLine + 70.5 + distanceBetweenStaves * index) // Bass Clef  
+            
+            Array(numberOfMeasuresPerBar).fill(null).forEach((nothing, measureIndex) => {
+                if (!measureIndex) return
+                ctx.fillRect(barWidth / (numberOfBeatsPerBar / timeSignatureBeats) * measureIndex + startStaffX + initialOffset - 5, topLine + distanceBetweenStaves * index, 1.5, 100)
+                }
+            )
+
             Array(2).fill(null).forEach((v, ind) => {                                   // Treble and Bass staves
                 ctx.fillRect(startStaffX + 10,topLine + 50 + distanceBetweenStaves*index,30,1) // C4 bar
                 
                 ctx.fillRect(startStaffX,topLine + distanceBetweenStaves * index,2,100)        // Start Staff
                 ctx.fillRect(width - startStaffX,topLine + distanceBetweenStaves * index,2,101)  // End staff
 
+                
+
                 Array(5).fill(null).forEach( (v,i) =>                                   // Staff lines
                     ctx.fillRect(startStaffX, (topLine) + 10 * i + 60 * ind + distanceBetweenStaves * index, width - 2 * startStaffX, 1) )
-        }) })
+            })  
+            
+        })
 
     }
+   
+
+    BUTTON.addEventListener('click', play)
+
+   
+
+        
+        // |~~~~~~~~~~~~~~ -- | Bar animation | -- ~~~~~~~~~~~~~~| \\
     var x = 0
     var y = 0
     var dir = "FORWARD"
-    var start, previousTimeStamp
-    var done = false
+    var start, pauseTime = 0, elapsed
+    var animationPaused = false
     // var currentNoteDuration = 0.5
     // var noteNumber = 0
 
-        // |~~~~~~~~~~~~~~ -- | Bar animation | -- ~~~~~~~~~~~~~~| \\
+    let i = 0
+    var songDistance = 0
+    var currentStaff = 0
 
-    function animateBar() {
-        let i = 0
-        var songDistance = 0
-        var currentStaff = 0
-    window.requestAnimationFrame(function loop(timestamp) {
+    function loop(timestamp) {
         if (start === undefined) {
             start = timestamp
         }
-        const elapsed = timestamp - start
+        if (animationPaused) {pauseTime = timestamp - start - elapsed ; window.requestAnimationFrame(loop) ; return}
+        // const pauseTime = resumeTimeStart = pauseTimeStart
+        elapsed = timestamp - start - pauseTime
         // Dynamic line movement, based on duration of note and distance to next note
 
         const totalTimeWhenNextNotePlayed = Object.values(songObject).slice(0,i).reduce((a,v) => a + v.duration, 0) * unitDistance
@@ -470,12 +500,13 @@
 
         currentStaff = Math.floor(((durationOfNotesPlayed + noteElapsed + 26)*0.001 * unitDistance) / (barWidth))
             // SMUDGE factor, that 26 is looking 26 milliseconds into the future to determine whether the bar is within 26 milliseconds of the next line's first note. Why 26 ? Not sure, I think and hope that it is just javascript's refresh rate, hopefully it is NOT my buffer end length or my 0.25 ending note... 'cause I can't wrap my head around either of those.
-            // 26 milliseconds = 0.026 * unitDistance, unitDistance = 1 beat in pixels, bpm = 30, so 2 seconds per beat, 0.026/2 beats, === 0.013 pixels, Almost certainly nothing to do with the bugger or the ending note
+            // 26 milliseconds = 0.026 * unitDistance, unitDistance = 1 beat in pixels, bpm = 30, so 2 seconds per beat, 0.026/2 beats, === 0.013 pixels, Almost certainly nothing to do with the buffer or the ending note
             // logging shows that there is a 16 to 17 ms window between each call, that is 1 / 60th of a second: the framerate.
-        
+            // This can vary between screens. Not sure if I can get access to the refresh rate programmatically
+
         y = distanceBetweenStaves * Math.floor((durationOfNotesPlayed*0.001 * unitDistance) / (barWidth))
 
-        console.log(totalSongDistance%barWidth, Math.floor(totalSongDistance / barWidth))
+        // console.log(totalSongDistance%barWidth, Math.floor(totalSongDistance / barWidth))
         if (x >= (totalSongDistance % (barWidth) || barWidth)
         && y ===  160 * (numberOfStaves - 1)) {
             x = 0
@@ -491,40 +522,54 @@
             1, 
             99)
             // if (y === 2 * 160) return
+        
         window.requestAnimationFrame(loop)
-    })}
-
-    BUTTON.addEventListener('click', play)
-
-    async function play() {
+    }
 
 
         // |~~~~~~~~~~~~~~ -- | Sound | -- ~~~~~~~~~~~~~~| \\
 
 
-        function playSound(frequency, time, i, noteDuration) {
-            const osc =  SOUND.createOscillator()
-            const gainNode = SOUND.createGain()
-            osc.connect(gainNode)
-            gainNode.connect(SOUND.destination)
-            gainNode.gain.exponentialRampToValueAtTime(0.1, SOUND.currentTime + time )
-            gainNode.gain.linearRampToValueAtTime(0.00001, SOUND.currentTime + noteDuration + time)
-            // gainNode.gain.linearRampToValueAtTime(0, SOUND.currentTime + time + duration)
-            osc.type = 'triangle'
-            osc.frequency.value = frequency
-            osc.start(SOUND.currentTime + time)
-            // osc.stop(SOUND.currentTime + duration + time)
+    function playSound(frequency, time, i, noteDuration) {
+        const osc =  SOUND.createOscillator()
+        const gainNode = SOUND.createGain()
+        osc.connect(gainNode)
+        gainNode.connect(SOUND.destination)
+        gainNode.gain.exponentialRampToValueAtTime(0.1, SOUND.currentTime + time )
+        gainNode.gain.linearRampToValueAtTime(0.00001, SOUND.currentTime + noteDuration + time)
+        // gainNode.gain.linearRampToValueAtTime(0, SOUND.currentTime + time + duration)
+        osc.type = 'triangle'
+        osc.frequency.value = frequency
+        osc.start(SOUND.currentTime + time)
+        // console.log(SOUND.state)
+        // osc.stop(SOUND.currentTime + duration + time)
+    }
+
+    function play() {
+
+        window.requestAnimationFrame(loop)
+
+        for (var i = 0; i < Object.keys(songObject).length; i++) {
+            const noteName = songObject[i].name
+            const noteNumber = i
+            const noteDuration = songObject[i].duration
+            const songElapsed = Object.values(songObject).slice(0,i).reduce((acc, obj)=> acc + obj.duration, 0)
+            playSound(frequencyNoteMap[noteName], songElapsed, noteNumber, noteDuration)
         }
 
-    animateBar()
+        
+    }
 
-    for (var i = 0; i < Object.keys(songObject).length; i++) {
-        const noteName = songObject[i].name
-        const noteNumber = i
-        const noteDuration = songObject[i].duration
-        const songElapsed = Object.values(songObject).slice(0,i).reduce((acc, obj)=> acc + obj.duration, 0)
-        playSound(frequencyNoteMap[noteName], songElapsed, noteNumber, noteDuration)
-    }}
+    function pausePlayback() {
+        if (SOUND.state === "running"){
+            animationPaused = true
+            SOUND.suspend().then(()=>document.getElementById("pause").innerText = "Unpause")
+        }
+        else if (SOUND.state === "suspended") {
+            animationPaused = false
+            SOUND.resume().then(() => document.getElementById("pause").innerText = "Pause")
+        }
+    }
 
     randomise()
 
