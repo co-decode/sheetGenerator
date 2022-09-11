@@ -3,44 +3,41 @@
 <head>
     <title>Sheet Music Generator</title>
     <link rel="icon" href="./music.svg">
+    <link rel="preload" href="index.css">
     <style>
-        @font-face {
-            font-family:bravura;
-            src: url("/fonts/Bravura.woff2");
-        }
-        body {
-            margin: 0;
-            /* overflow:hidden; */
-        }
-        #animation {
-            position:absolute;
-            top: 0;
-        }
-        #sound {
-            position:absolute;
-            top: 10px;
-            left: 10px;
-        }
-        #randomise {
-            position: absolute;
-            top: 10px;
-            left: 200px;
-        }
-        #distance {
-            position: absolute;
-            top: 10px;
-            left: 400px;
-        }
-        #pause {
-            position: absolute;
-            top: 10px;
-            left: 600px;
-        }
-        #stop {
-            position: absolute;
-            top: 10px;
-            left: 800px;
-        }
+    body {
+        margin: 0;
+        /* overflow:hidden; */
+    }
+    #animation {
+        position:absolute;
+        top: 0;
+    }
+    #sound {
+        position:absolute;
+        top: 10px;
+        left: 10px;
+    }
+    #randomise {
+        position: absolute;
+        top: 10px;
+        left: 200px;
+    }
+    #distance {
+        position: absolute;
+        top: 10px;
+        left: 400px;
+    }
+    #pause {
+        position: absolute;
+        top: 10px;
+        left: 600px;
+    }
+    #stop {
+        position: absolute;
+        top: 10px;
+        left: 800px;
+    }
     </style>
 </head>
 <body>
@@ -52,13 +49,17 @@
     <button id="stop" onClick="stopPlayback()">Stop</button>
     <div id="distance"></div>
 </body>
-<script onload="">
+<script>
     'use strict'
     var CANVAS = document.getElementById('sheet-music')
     var ANIMATION = document.getElementById('animation')
     var ctxAnim = ANIMATION.getContext('2d')
+    var ctx = CANVAS.getContext('2d')
+    ctx.font = "40px bravura"
+
 
     var SOUND
+
     var BUTTON = document.getElementById('sound')
 
     const songObject = {}
@@ -274,7 +275,7 @@
     let durations = [
         0.25, 0.5, 1, 2
     ]
-    const bpm = 120  
+    const bpm = 60
     const numberOfMeasures = 3
     const timeSignatureBeats = 4
     // timeSignatureUnit = 4
@@ -290,6 +291,8 @@
     var unitDistance = barWidth / (numberOfBeatsPerBar * secondsPerBeat)
 
     function randomise(){
+        SOUND = new AudioContext()
+
         const noteList = cMajor
         let currentDistance = 0
         let index = 0
@@ -344,7 +347,6 @@
     
     function drawSheet() {
         var {width, height} = CANVAS
-        var ctx = CANVAS.getContext('2d')
         ctx.fillStyle = "black"
         ctx.font = "40px bravura"
         ctx.fillText("\uE084", startStaffX + 43, topLine + 10)                                 // Time signatures  - treble
@@ -513,12 +515,12 @@
         y = distanceBetweenStaves * Math.floor((durationOfNotesPlayed*0.001 * unitDistance) / (barWidth))
 
         // console.log(totalSongDistance%barWidth, Math.floor(totalSongDistance / barWidth))
-        if (x >= (totalSongDistance % (barWidth) || barWidth)
+        if (x >= (totalSongDistance % (barWidth) - 5 || barWidth - 5 )
         && y ===  160 * (numberOfStaves - 1)) {
             x = 0
             i = 0
             start = undefined
-            SOUND.close()
+            SOUND.close().then(()=> SOUND = new AudioContext())
             return
         } 
         ctxAnim.fillStyle = "black"
@@ -550,10 +552,11 @@
         // console.log(SOUND.state)
         // osc.stop(SOUND.currentTime + duration + time)
     }
-
+    
     function play() {
         if (start) return
-        SOUND = new AudioContext()
+
+
 
         // Initialisation for animation vVv - watch for namespace issues
         x = 0
@@ -580,12 +583,10 @@
     function pausePlayback() {
         if (!SOUND) return
         if (SOUND.state === "running"){
-            animationPaused = true
-            SOUND.suspend().then(()=>document.getElementById("pause").innerText = "Unpause")
+            SOUND.suspend().then(()=>{document.getElementById("pause").innerText = "Unpause"; animationPaused = true})
         }
         else if (SOUND.state === "suspended") {
-            animationPaused = false
-            SOUND.resume().then(() => document.getElementById("pause").innerText = "Pause")
+            SOUND.resume().then(() => {document.getElementById("pause").innerText = "Pause"; animationPaused = false})
         }
         else return
     }
@@ -593,15 +594,17 @@
     function stopPlayback() {
         if (SOUND.state === "running") {
             animationStopped = true
-            SOUND.close()
+            SOUND.close().then(() => {SOUND = new AudioContext()})
         }
         else if (SOUND.state === "suspended") {
             animationPaused = false
             animationStopped = true
-            SOUND.close().then(() => document.getElementById("pause").innerText = "Pause")
+            SOUND.close().then(() => {document.getElementById("pause").innerText = "Pause"; SOUND = new AudioContext()})
 
         }
+        else return
     }
+
 
     randomise()
 
