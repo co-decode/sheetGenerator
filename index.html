@@ -16,7 +16,6 @@
             position:absolute;
             top: 0;
         }
-
         #sound {
             position:absolute;
             top: 10px;
@@ -37,21 +36,29 @@
             top: 10px;
             left: 600px;
         }
+        #stop {
+            position: absolute;
+            top: 10px;
+            left: 800px;
+        }
     </style>
 </head>
 <body>
     <canvas id="sheet-music"></canvas>
     <canvas id="animation"></canvas>
-    <button id="sound">Play Sound</button>
+    <button id="sound" onClick="play()">Play Sound</button>
     <button id="randomise" onClick="randomise()">Randomise</button>
     <button id="pause" onClick="pausePlayback()">Pause</button>
+    <button id="stop" onClick="stopPlayback()">Stop</button>
     <div id="distance"></div>
 </body>
-<script>
+<script onload="">
     'use strict'
-    var CANVAS
-    var ANIMATION
-    var SOUND = new AudioContext()
+    var CANVAS = document.getElementById('sheet-music')
+    var ANIMATION = document.getElementById('animation')
+    var ctxAnim = ANIMATION.getContext('2d')
+
+    var SOUND
     var BUTTON = document.getElementById('sound')
 
     const songObject = {}
@@ -316,16 +323,11 @@
     const distanceDiv = document.getElementById("distance")
     distanceDiv.innerText = `${totalSongDistance}`
 
-    main()
+    fitToScreen()
     }
 
     // console.log(songObject, songDurations, songNoteNames)
-    function main() {
-        CANVAS = document.getElementById('sheet-music')
-        ANIMATION = document.getElementById('animation')
-
-        fitToScreen() 
-    }
+    
     function fitToScreen() {
         CANVAS.width = window.innerWidth
         CANVAS.height = window.innerHeight * 2
@@ -421,9 +423,13 @@
             ctx.fillText("\uE050", startStaffX + 10, topLine + 30 + distanceBetweenStaves * index)  // Treble Clef
             ctx.fillText(`\ue062`, startStaffX + 10,topLine + 70.5 + distanceBetweenStaves * index) // Bass Clef  
             
-            Array(numberOfMeasuresPerBar).fill(null).forEach((nothing, measureIndex) => {
+            Array(numberOfMeasuresPerBar).fill(null).forEach((nothing, measureIndex) => {           // Measure bars
                 if (!measureIndex) return
-                ctx.fillRect(barWidth / (numberOfBeatsPerBar / timeSignatureBeats) * measureIndex + startStaffX + initialOffset - 5, topLine + distanceBetweenStaves * index, 1.5, 100)
+                function drawLine(offset) {ctx.fillRect(
+                    barWidth / (numberOfBeatsPerBar / timeSignatureBeats) * measureIndex + startStaffX + initialOffset - offset, 
+                    topLine + distanceBetweenStaves * index, 
+                    1.5, 100)}
+                drawLine(5)
                 }
             )
 
@@ -444,29 +450,30 @@
     }
    
 
-    BUTTON.addEventListener('click', play)
 
    
 
         
         // |~~~~~~~~~~~~~~ -- | Bar animation | -- ~~~~~~~~~~~~~~| \\
-    var x = 0
-    var y = 0
-    var dir = "FORWARD"
-    var start, pauseTime = 0, elapsed
-    var animationPaused = false
-    // var currentNoteDuration = 0.5
-    // var noteNumber = 0
 
-    let i = 0
-    var songDistance = 0
-    var currentStaff = 0
+        var x = 0
+        var y = 0
+        var dir = "FORWARD"
+        var start = undefined, pauseTime = 0, elapsed
+        var animationPaused = false
+        var animationStopped = false
+        let i = 0
+
+        // var songDistance = 0
+        var currentStaff = 0
+    
 
     function loop(timestamp) {
         if (start === undefined) {
             start = timestamp
         }
         if (animationPaused) {pauseTime = timestamp - start - elapsed ; window.requestAnimationFrame(loop) ; return}
+        if (animationStopped) {x = 0;start = undefined;pauseTime = 0;i = 0;ctxAnim.clearRect(0, 0, ANIMATION.width, ANIMATION.height);animationStopped = false; return}
         // const pauseTime = resumeTimeStart = pauseTimeStart
         elapsed = timestamp - start - pauseTime
         // Dynamic line movement, based on duration of note and distance to next note
@@ -480,7 +487,7 @@
         const noteElapsed = elapsed - durationOfNotesPlayed
         const noteDuration = songObject[i-1].duration
         // console.log(noteDuration, durationOfNotesPlayed)
-        songDistance = Object.values(songObject).slice(0,i).reduce((a,obj) => a + obj.duration * unitDistance, 0)
+        // songDistance = Object.values(songObject).slice(0,i).reduce((a,obj) => a + obj.duration * unitDistance, 0)
 
         
         x = (durationOfNotesPlayed*0.001 * unitDistance) % (barWidth) + (noteElapsed*0.001/noteDuration) * unitDistance * noteDuration
@@ -492,9 +499,8 @@
         var totalSongDistance = Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
         
         
-        var ctx = ANIMATION.getContext('2d')
         
-        ctx.clearRect(0, 0, ANIMATION.width, ANIMATION.height)
+        ctxAnim.clearRect(0, 0, ANIMATION.width, ANIMATION.height)
         
         const numberOfStaves = Math.ceil(totalSongDistance/(barWidth))
 
@@ -511,12 +517,12 @@
         && y ===  160 * (numberOfStaves - 1)) {
             x = 0
             i = 0
-            songDistance = 0
             start = undefined
+            SOUND.close()
             return
         } 
-        ctx.fillStyle = "black"
-        ctx.fillRect(
+        ctxAnim.fillStyle = "black"
+        ctxAnim.fillRect(
             startStaffX + initialOffset + 5.5 + x, 
             offsetToFirstLine + y, 
             1, 
@@ -546,10 +552,21 @@
     }
 
     function play() {
+        if (start) return
+        SOUND = new AudioContext()
+
+        // Initialisation for animation vVv - watch for namespace issues
+        x = 0
+        start = undefined
+        pauseTime = 0
+        animationPaused = false
+        i = 0
+        
+        document.getElementById("pause").innerText = "Pause"
 
         window.requestAnimationFrame(loop)
 
-        for (var i = 0; i < Object.keys(songObject).length; i++) {
+        for (let i = 0; i < Object.keys(songObject).length; i++) {
             const noteName = songObject[i].name
             const noteNumber = i
             const noteDuration = songObject[i].duration
@@ -561,6 +578,7 @@
     }
 
     function pausePlayback() {
+        if (!SOUND) return
         if (SOUND.state === "running"){
             animationPaused = true
             SOUND.suspend().then(()=>document.getElementById("pause").innerText = "Unpause")
@@ -568,6 +586,20 @@
         else if (SOUND.state === "suspended") {
             animationPaused = false
             SOUND.resume().then(() => document.getElementById("pause").innerText = "Pause")
+        }
+        else return
+    }
+
+    function stopPlayback() {
+        if (SOUND.state === "running") {
+            animationStopped = true
+            SOUND.close()
+        }
+        else if (SOUND.state === "suspended") {
+            animationPaused = false
+            animationStopped = true
+            SOUND.close().then(() => document.getElementById("pause").innerText = "Pause")
+
         }
     }
 
