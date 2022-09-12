@@ -23,16 +23,36 @@ NO Wrap the drawing, the sound and the animation with one function so that varia
 
 DONE Want the drawing to wrap itself properly
 
-0.5 and 0.25 should join with each other when adjacent according to pulse
-
 DONE - many improvements to come, like responsiveness to differing measure widths... A line should be drawn between the measures
 
 DONE I want to be able to call a stop to the play back and animation with the click of a button.
     Still need to call stop.
     Should only be able to click play once whilst in play through
 
+DONE Add an input control for the bpm.
+
+DONE Allow the playback to loop.
+
+! Add bass chords
+
+! Permit the usage of sharps and flats
+    - ! Sound
+    - Represent them with glyphs.
+
+Allow the playback to be paused and restarted from any position.
+    Gonna have to construct this manually.
+
+! The animation timing is really dodgy, perhaps base it off measure size so that we avoid having to manually count pixels all the time?
+
+! Add a metronome.
+
+
+
+
+Perhaps there should be a minimum bar size, or 0.25 spacing distance.
+
 Figure out how to scroll the canvas without changing the canvas size
 
 Make the graphics scalable
 
-Perhaps there should be a minimum bar size, or 0.25 spacing distance.
+0.5 and 0.25 should join with each other when adjacent according to pulse
