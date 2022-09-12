@@ -78,6 +78,7 @@
     var BUTTON = document.getElementById('sound')
 
     const songObject = {}
+    const bassObject = {}
     const songDurations = []
     const songNoteNames = []
 
@@ -377,6 +378,72 @@
         "B8":0,
     }
 
+    const offsetMap = {
+        38:["C0","C#0"],
+        37:["D0","D#0","Db0"],
+        36:["E0","Eb0"],
+        35:["F0","F#0"],
+        34:["G0","G#0","Gb0"],
+        33:["A0","A#0","Ab0"],
+        32:["B0","Bb0"],
+        31:["C1","C#1"],
+        30:["D1","D#1","Db1"],
+        29:["E1","Eb1"],
+        28:["F1","F#1"],
+        27:["G1","G#1","Gb1"],
+        26:["A1","A#1","Ab1"],
+        25:["B1","Bb1"],
+        24:["C2","C#2"],
+        23:["D2","D#2","Db2"],
+        22:["E2","Eb2"],
+        21:["F2","F#2"],
+        20:["G2","G#2","Gb2"],
+        19:["A2","A#2","Ab2"],
+        18:["B2","Bb2"],
+        17:["C3","C#3"],
+        16:["D3","D#3","Db3"],
+        15:["E3","Eb3"],
+        14:["F3","F#3"],
+        13:["G3","G#3","Gb3"],
+        12:["A3","A#3","Ab3"],
+        11:["B3","Bb3"],
+        10:["C4","C#4"],
+        9:["D4","D#4","Db4"],
+        8:["E4","Eb4"],
+        7:["F4","F#4"],
+        6:["G4","G#4","Gb4"],
+        5:["A4","A#4","Ab4"],
+        4:["B4","Bb4"],
+        3:["C5","C#5"],
+        2:["D5","D#5","Db5"],
+        1:["E5","Eb5"],
+        0:["F5","F#5"],
+        "-1":["G5","G#5","Gb5"],
+        "-2":["A5","A#5","Ab5"],
+        "-3":["B5","Bb5"],
+        "-4":["C6","C#6"],
+        "-5":["D6","D#6","Db6"],
+        "-6":["E6","Eb6"],
+        "-7":["F6","F#6"],
+        "-8":["G6","G#6","Gb6"],
+        "-9":["A6","A#6","Ab6"],
+        "-10":["B6","Bb6"],
+        "-11":["C7","C#7"],
+        "-12":["D7","D#7","Db7"],
+        "-13":["E7","Eb7"],
+        "-14":["F7","F#7"],
+        "-15":["G7","G#7","Gb7"],
+        "-16":["A7","A#7","Ab7"],
+        "-17":["B7","Bb7"],
+        "-18":["C8","C#8"],
+        "-19":["D8","D#8","Db8"],
+        "-10":["E8","Eb8"],
+        "-21":["F8","F#8"],
+        "-22":["G8","G#8","Gb8"],
+        "-23":["A8","A#8","Ab8"],
+        "-24":["B8","Bb8"]
+    }
+
     const cPentatonicMajor = [
         "C5",
         "D5",
@@ -399,16 +466,30 @@
         "G5"
     ]
 
-    let durations = [
+    const bassGNotes = [
+        "G2",
+        "C3",
+        "E3"
+    ]
+
+    var durations = [
         0.25, 0.5, 1, 2
     ]
+    var bassDurations = [
+        1,2
+    ]
+
+
     var bpm = 120
     bpmInput.value = bpm
     bpmInput.addEventListener("change", (e) => {
         bpm = e.target.value; 
         secondsPerBeat = 60 / bpm; 
         unitDistance = barWidth / (numberOfBeatsPerBar); 
-        stopPlayback(); animationStopped = false; fitToScreen();})
+        stopPlayback(); 
+        animationStopped = false; 
+        fitToScreen();
+    })
     const numberOfMeasures = 2
     const timeSignatureBeats = 4
     // timeSignatureUnit = 4
@@ -430,11 +511,33 @@
         const noteList = cMajor
         let currentDistance = 0
         let index = 0
+        let bassIndex = 0
         Object.keys(songObject).forEach(noteNumber => delete songObject[noteNumber])
+        Object.keys(bassObject).forEach(noteNumber => delete bassObject[noteNumber])
         
         Array(numberOfMeasures).fill(null).forEach((nothing, measure) => {                 // Number of Musical Measures
         while (currentDistance < timeSignatureBeats) {
+            const bassNLU = bassDurations[Math.floor(Math.random() * bassDurations.length)]
+
+            bassObject[bassIndex] = {
+                duration: bassNLU,
+                name: bassGNotes[Math.floor(Math.random() * bassGNotes.length)]
+            }
+
+            currentDistance += bassNLU
+
+            const distanceLeft = timeSignatureBeats - currentDistance
+            if (bassDurations.at(-1) > distanceLeft){              // Cut out notes which would exceed bar length
+                bassDurations = bassDurations.filter(dur => dur <= distanceLeft)
+            }
+            bassIndex++
+        }
+        currentDistance = 0
+        bassDurations = [1,2]
+        while (currentDistance < timeSignatureBeats) {
             const noteLengthUnit = durations[Math.floor(Math.random()*durations.length)]
+
+
     
             songObject[index] = {
                 duration: noteLengthUnit, 
@@ -450,8 +553,7 @@
         }
         currentDistance = 0
         durations = [0.25, 0.5, 1, 2]
-
-    })
+        })
         var totalSongDistance = Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
 
         const distanceDiv = document.getElementById("distance")
@@ -462,7 +564,6 @@
 
     
     function fitToScreen() {
-
         CANVAS.width = window.innerWidth
         CANVAS.height = window.innerHeight * 2
         ANIMATION.width = window.innerWidth
@@ -500,42 +601,100 @@
         
         Object.values(songObject).forEach((obj,noteNumber)=> {
             const noteDuration = obj.duration
-            const durationUnit = obj.duration
+            const offset = Object.keys(offsetMap)
+                .find(offsetKey => offsetMap[offsetKey]
+                    .some(noteName=> new RegExp(noteName)
+                        .test(obj.name)))
+
             
-            ctx.fillText(noteHead[durationUnit],// Draw note head
+            ctx.fillText(noteHead[noteDuration],// Draw note head
                 startStaffX + initialOffset + songDistance % barWidth, 
-                topLine + 0.5 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth))
-            if (durationUnit <= 2) {            // Draw note bars and tails
-                if (offsetNoteMap[obj.name] > 4) {
+                topLine + 0.5 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth))
+            if (noteDuration <= 2) {            // Draw note bars and tails
+                if (offset > 4) {
                     ctx.fillRect(
                         startStaffX + initialOffset + songDistance % barWidth + 10,
-                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth),
                         2,
                         -30)
-                    if (durationUnit === 0.5) {
+                    if (noteDuration === 0.5) {
                         ctx.fillText('\ue240', 
                         startStaffX + initialOffset + songDistance % barWidth + 10, 
-                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth) - 35)
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) - 35)
                     }
-                    else if (durationUnit === 0.25) {
+                    else if (noteDuration === 0.25) {
                         ctx.fillText('\ue242', 
                         startStaffX + initialOffset + songDistance % barWidth + 10, 
-                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth) - 35)
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) - 35)
                     }
                 }
                 else {
                     ctx.fillRect(
                         startStaffX + initialOffset + songDistance % barWidth,
-                        topLine + 0.5 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                        topLine + 0.5 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth),
                         2,
                         30)
-                    if (durationUnit === 0.5) {
+                    if (noteDuration === 0.5) {
                         ctx.fillText('\ue241', startStaffX + initialOffset + songDistance % barWidth,
-                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth) + 35)
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) + 35)
                     }
-                    else if (durationUnit === 0.25) {
+                    else if (noteDuration === 0.25) {
                         ctx.fillText('\ue243', startStaffX + initialOffset + songDistance % barWidth,
-                        topLine - 1 + halfToneDistance * offsetNoteMap[obj.name] + distanceBetweenStaves * Math.floor(songDistance / barWidth) + 35)
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) + 35)
+                    }
+                }
+            }
+            if (obj.name === "C4") {            // C4 bar
+                ctx.fillRect(
+                    startStaffX + initialOffset + songDistance % barWidth - 0.25 * 30, 
+                    topLine + halfToneDistance * offsetNoteMap["C4"] + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                    30,
+                    1)      
+            }
+            
+            songDistance += unitDistance * noteDuration
+        })
+        songDistance = 0
+        Object.values(bassObject).forEach((obj,noteNumber)=> {
+            const noteDuration = obj.duration
+            const offset = Object.keys(offsetMap)
+                .find(offsetKey => offsetMap[offsetKey]
+                    .some(noteName=> new RegExp(noteName)
+                        .test(obj.name)))            
+            ctx.fillText(noteHead[noteDuration],// Draw note head
+                startStaffX + initialOffset + songDistance % barWidth, 
+                topLine + 0.5 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth))
+            if (noteDuration <= 2) {            // Draw note bars and tails
+                if (offset > 4) {
+                    ctx.fillRect(
+                        startStaffX + initialOffset + songDistance % barWidth + 10,
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                        2,
+                        -30)
+                    if (noteDuration === 0.5) {
+                        ctx.fillText('\ue240', 
+                        startStaffX + initialOffset + songDistance % barWidth + 10, 
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) - 35)
+                    }
+                    else if (noteDuration === 0.25) {
+                        ctx.fillText('\ue242', 
+                        startStaffX + initialOffset + songDistance % barWidth + 10, 
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) - 35)
+                    }
+                }
+                else {
+                    ctx.fillRect(
+                        startStaffX + initialOffset + songDistance % barWidth,
+                        topLine + 0.5 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                        2,
+                        30)
+                    if (noteDuration === 0.5) {
+                        ctx.fillText('\ue241', startStaffX + initialOffset + songDistance % barWidth,
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) + 35)
+                    }
+                    else if (noteDuration === 0.25) {
+                        ctx.fillText('\ue243', startStaffX + initialOffset + songDistance % barWidth,
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) + 35)
                     }
                 }
             }
@@ -658,7 +817,6 @@
             // logging shows that there is a 16 to 17 ms window between each call, that is 1 / 60th of a second: the framerate.
             // This can vary between screens. Not sure if I can get access to qthe refresh rate programmatically
             
-            console.log(totalSongDistance % barWidth, totalSongDistance, barWidth, x, 5/(secondsPerBeat* 1600 / window.innerWidth))
             y = distanceBetweenStaves * Math.floor((durationOfNotesPlayed*0.001 * unitDistance/secondsPerBeat) / (barWidth))
             if ((x >= (totalSongDistance % (barWidth) || barWidth ) /* - (5 / (secondsPerBeat * 1600 / window.innerWidth)) */
             && y ===  160 * (numberOfStaves - 1)) 
@@ -719,8 +877,13 @@
             const songElapsed = Object.values(songObject).slice(0,i).reduce((acc, obj)=> acc + obj.duration * secondsPerBeat, 0)
             playSound(frequencyNoteMap[noteName], songElapsed, noteNumber, noteDuration)
         }
-
-        
+        for (let ind = 0; ind < Object.keys(bassObject).length; ind++) {
+            const noteName = bassObject[ind].name
+            const noteNumber = ind
+            const noteDuration = bassObject[ind].duration * secondsPerBeat
+            const songElapsed = Object.values(bassObject).slice(0,ind).reduce((acc, obj)=> acc + obj.duration * secondsPerBeat, 0)
+            playSound(frequencyNoteMap[noteName], songElapsed, noteNumber, noteDuration)
+        }
     }
 
     function pausePlayback() {

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Metronome</title>
+    <style>
+
+    </style>
+</head>
+<body>
+    <button onclick="startMetronome()">Start</button>
+</body>
+<script>
+    var SOUND = new AudioContext()
+    var time = 0
+    var noteDuration = 1
+
+    var start
+
+    function playMetronome() {
+        const osc =  SOUND.createOscillator()
+        const gainNode = SOUND.createGain()
+        osc.connect(gainNode)
+        gainNode.connect(SOUND.destination)
+        gainNode.gain.exponentialRampToValueAtTime(0.1, SOUND.currentTime + time )
+        gainNode.gain.linearRampToValueAtTime(0.00001, SOUND.currentTime + noteDuration + time)
+        osc.type = 'triangle'
+        // osc.frequency.value = frequency
+        osc.start(SOUND.currentTime + time)
+    }
+
+    function startMetronome() {
+        window.requestAnimationFrame((timestamp) => {
+            if (start === undefined) start = timestamp - 1000;
+            var elapsed = timestamp - start
+            console.log(elapsed)
+            if (Number(elapsed.toFixed(0)) >= 1000) {
+                start = timestamp
+                playMetronome()
+            }
+            window.requestAnimationFrame(startMetronome)
+        })
+    }
+
+
+
+</script>
+</html>
