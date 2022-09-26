@@ -45,7 +45,7 @@
     }
     #bpm {
         position: absolute;
-        top: 160px;
+        top: 165px;
         left: 5px;
     }
     </style>
@@ -472,6 +472,24 @@
         "E3"
     ]
 
+    const keyObject = {
+        C: [null, 0],
+        G: ['SHARP', 1],
+        D: ['SHARP', 2],
+        A: ['SHARP', 3],
+        E: ['SHARP', 4],
+        B: ['SHARP', 5],
+        Fs: ['SHARP', 6],
+        Cs: ['SHARP', 7],
+        F: ['FLAT', 1],
+        Bf: ['FLAT', 2],
+        Ef: ['FLAT', 3],
+        Af: ['FLAT', 4],
+        Df: ['FLAT', 5],
+        Gf: ['FLAT', 6],
+        Cf: ['FLAT', 7],
+    }
+
     var durations = [
         0.25, 0.5, 1, 2
     ]
@@ -492,18 +510,89 @@
     })
     const numberOfMeasures = 2
     const timeSignatureBeats = 4
+    const key = "C"
     // timeSignatureUnit = 4
     var secondsPerBeat = 60 / bpm         
     var topLine = 50
     var distanceBetweenStaves = 160
     var startStaffX = 40
-    var initialOffset = 100
-    var bufferToEnd = 20
+    var initialOffset = 90 + keyObject[key][1] * 10
+    var bufferToEnd = 3
     var barWidth = (window.innerWidth - 2 * startStaffX - initialOffset - bufferToEnd)
     const numberOfMeasuresPerBar = 2
     const numberOfBeatsPerBar = numberOfMeasuresPerBar * timeSignatureBeats
     var unitDistance = barWidth / (numberOfBeatsPerBar)
     // p / bar  /  beat / bar = pixels / beat
+
+
+    function keySignatures(sharpOrFlat, noOfGlyphs) {
+        var keySignatureOffset = 70
+        var glyphWidthUnit = 10
+        var semiToneDistance = 5
+        var distanceBetweenTopLines = 12 * semiToneDistance
+        var treblePositions, bassPositions
+        if (sharpOrFlat === "SHARP") {
+            treblePositions = [0, 3, -1, 2, 5, 1, 4]
+            bassPositions = [1, 5, 1, 4, 7, 3, 6]
+            Array(noOfGlyphs).fill(null).forEach((nothing, ind) => {
+                ctx.fillText(`\ue262`, 
+                startStaffX + keySignatureOffset + glyphWidthUnit * ind,
+                topLine + semiToneDistance * treblePositions[ind]) 
+                ctx.fillText(`\ue262`, 
+                startStaffX + keySignatureOffset + glyphWidthUnit * ind,
+                topLine + distanceBetweenTopLines + semiToneDistance * bassPositions[ind])
+            })
+        }
+        else if (sharpOrFlat === "FLAT") {
+            treblePositions = [4, 1, 5, 2, 6, 3, 7]
+            bassPositions = [6, 3, 7, 4, 8, 5, 9]
+            Array(noOfGlyphs).fill(null).forEach((nothing, ind) => {
+                ctx.fillText(`\ue260`, 
+                startStaffX + keySignatureOffset + glyphWidthUnit * ind,
+                topLine + semiToneDistance * treblePositions[ind]) 
+                ctx.fillText(`\ue260`, 
+                startStaffX + keySignatureOffset + glyphWidthUnit * ind,
+                topLine + distanceBetweenTopLines + semiToneDistance * bassPositions[ind])
+            })
+
+        }
+        /* 
+        ctx.fillText(`\ue260`, startStaffX + 70, topLine + 20)   // Flat Signatures - Treble
+        ctx.fillText(`\ue260`, startStaffX + 80, topLine + 5)
+        ctx.fillText(`\ue260`, startStaffX + 90, topLine + 25)
+        ctx.fillText(`\ue260`, startStaffX + 100, topLine + 10)
+        ctx.fillText(`\ue260`, startStaffX + 110, topLine + 30)
+        ctx.fillText(`\ue260`, startStaffX + 120, topLine + 15)
+        ctx.fillText(`\ue260`, startStaffX + 130, topLine + 35)
+    
+        ctx.fillText(`\ue260`, startStaffX + 70, topLine + 60 + 30)   // Flat Signatures - Bass
+        ctx.fillText(`\ue260`, startStaffX + 80, topLine + 60 + 15)
+        ctx.fillText(`\ue260`, startStaffX + 90, topLine + 60 + 35)
+        ctx.fillText(`\ue260`, startStaffX + 100, topLine + 60 + 20)
+        ctx.fillText(`\ue260`, startStaffX + 110, topLine + 60 + 40)
+        ctx.fillText(`\ue260`, startStaffX + 120, topLine + 60 + 25)
+        ctx.fillText(`\ue260`, startStaffX + 130, topLine + 60 + 45)
+
+        ctx.fillText(`\ue262`, startStaffX + 70, topLine + 0)   // Sharp Signatures - Treble
+        ctx.fillText(`\ue262`, startStaffX + 80, topLine + 15)
+        ctx.fillText(`\ue262`, startStaffX + 90, topLine - 5)
+        ctx.fillText(`\ue262`, startStaffX + 100, topLine + 10)
+        ctx.fillText(`\ue262`, startStaffX + 110, topLine + 25)
+        ctx.fillText(`\ue262`, startStaffX + 120, topLine + 5)
+        ctx.fillText(`\ue262`, startStaffX + 130, topLine + 20)
+        
+        ctx.fillText(`\ue262`, startStaffX + 70, topLine + 60 + 10)   // Sharp Signatures - Bass
+        ctx.fillText(`\ue262`, startStaffX + 80, topLine + 60 + 25)
+        ctx.fillText(`\ue262`, startStaffX + 90, topLine + 60 + 5)
+        ctx.fillText(`\ue262`, startStaffX + 100, topLine + 60 + 20)
+        ctx.fillText(`\ue262`, startStaffX + 110, topLine + 60 + 35)
+        ctx.fillText(`\ue262`, startStaffX + 120, topLine + 60 + 15)
+        ctx.fillText(`\ue262`, startStaffX + 130, topLine + 60 + 30) */
+
+
+        // initialOffset += noOfGlyphs * glyphWidthUnit
+    }
+
 
     function randomise(){
         SOUND = new AudioContext()
@@ -588,6 +677,8 @@
         
         ctx.fillText("\uE084", startStaffX + 43, topLine + 60 + 10)               //  - bass
         ctx.fillText("\uE084", startStaffX + 43, topLine + 60 + 30)
+
+        keySignatures(...keyObject[key])                                                               // Key Signatures
 
         // |~~~~~~~~~~~~~~ -- | Note placement | -- ~~~~~~~~~~~~~~| \\
         
@@ -708,12 +799,13 @@
             
             songDistance += unitDistance * noteDuration
         })
-        Array(numberOfStaves).fill(null).forEach((v, index) => {                                     // Number of grand staves
+        Array(numberOfStaves).fill(null).forEach((v, index) => {                                    // Number of grand staves
             ctx.font = `100px bravura`
             ctx.fillText("\uE000", 25, topLine + 100 + distanceBetweenStaves * index)               // Staff Bracket
             ctx.font = "40px bravura"
             ctx.fillText("\uE050", startStaffX + 10, topLine + 30 + distanceBetweenStaves * index)  // Treble Clef
             ctx.fillText(`\ue062`, startStaffX + 10,topLine + 70.5 + distanceBetweenStaves * index) // Bass Clef  
+
             
             Array(numberOfMeasuresPerBar).fill(null).forEach((nothing, measureIndex) => {           // Measure bars
                 if (!measureIndex) return
@@ -818,7 +910,8 @@
             // This can vary between screens. Not sure if I can get access to qthe refresh rate programmatically
             
             y = distanceBetweenStaves * Math.floor((durationOfNotesPlayed*0.001 * unitDistance/secondsPerBeat) / (barWidth))
-            if ((x >= (totalSongDistance % (barWidth) || barWidth ) /* - (5 / (secondsPerBeat * 1600 / window.innerWidth)) */
+            if (
+              (x >= (totalSongDistance % (barWidth) || barWidth ) /* - (5 / (secondsPerBeat * 1600 / window.innerWidth)) */
             && y ===  160 * (numberOfStaves - 1)) 
             || y > 160 * (numberOfStaves - 1)) {
             x = 0

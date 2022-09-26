@@ -33,18 +33,19 @@ DONE Add an input control for the bpm.
 
 DONE Allow the playback to loop.
 
-! Add bass chords
+! Permit the usage of sharps and flats
+    - DONE Sound
+    - Represent them with glyphs, I only need key signatures for now.
+
+! The animation timing is really dodgy, perhaps base it off measure size so that we avoid having to manually count pixels all the time?
+    - Maybe just alter the end bar to sit where the note ends... it might be squishy for the 1/16th notes but at least it's accurate.
+
+later - Add bass chords
     - DONE Finished with the single bass line
     - Need to work on the chords... gonna need a more sophisticated way to represent timing.
 
-! Permit the usage of sharps and flats
-    - DONE Sound
-    - Represent them with glyphs.
-
 Allow the playback to be paused and restarted from any position.
     Gonna have to construct this manually.
-
-! The animation timing is really dodgy, perhaps base it off measure size so that we avoid having to manually count pixels all the time?
 
 ! Add a metronome.
     - build this in another file.
