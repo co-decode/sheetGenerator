@@ -33,12 +33,12 @@ DONE Add an input control for the bpm.
 
 DONE Allow the playback to loop.
 
-! Permit the usage of sharps and flats
+DONE Permit the usage of sharps and flats
     - DONE Sound
-    - Represent them with glyphs, I only need key signatures for now.
+    - DONE Represent them with glyphs, I only need key signatures for now.
 
-! The animation timing is really dodgy, perhaps base it off measure size so that we avoid having to manually count pixels all the time?
-    - Maybe just alter the end bar to sit where the note ends... it might be squishy for the 1/16th notes but at least it's accurate.
+DONE The animation timing is really dodgy, perhaps base it off measure size so that we avoid having to manually count pixels all the time?
+    DONE Maybe just alter the end bar to sit where the note ends... it might be squishy for the 1/16th notes but at least it's accurate.
 
 later - Add bass chords
     - DONE Finished with the single bass line
@@ -60,3 +60,12 @@ Figure out how to scroll the canvas without changing the canvas size
 Make the graphics scalable
 
 0.5 and 0.25 should join with each other when adjacent according to pulse
+
+
+
+->> Logic for determining key signature based on starting note is flawed
+
+I want to set an initial note for both bass and treble without having to specify how far they are apart
+
+I need to work on the under and over note lines: C2 up to C6.
+

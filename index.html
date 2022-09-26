@@ -90,7 +90,7 @@
         0.25:   `\ue0a4`
     }
 
-    const frequencyNoteMap = {
+    const frequencyNoteMap440 = {
         "C0":16.35,
         "C#0/Db0":17.32,
         "D0":18.35,
@@ -451,7 +451,7 @@
         "G5",
         "A5"
     ]
-    const cMajor = [
+    const gMajor = [
         /*"C4", 
         "D4",
         "E4",
@@ -471,7 +471,7 @@
         "C3",
         "E3"
     ]
-
+    
     const keyObject = {
         C: [null, 0],
         G: ['SHARP', 1],
@@ -479,20 +479,42 @@
         A: ['SHARP', 3],
         E: ['SHARP', 4],
         B: ['SHARP', 5],
-        Fs: ['SHARP', 6],
-        Cs: ['SHARP', 7],
         F: ['FLAT', 1],
-        Bf: ['FLAT', 2],
-        Ef: ['FLAT', 3],
-        Af: ['FLAT', 4],
-        Df: ['FLAT', 5],
-        Gf: ['FLAT', 6],
-        Cf: ['FLAT', 7],
+        Bb: ['FLAT', 2],
+        Eb: ['FLAT', 3],
+        Ab: ['FLAT', 4],
+        Db: ['FLAT', 5],
+        "F#": ['SHARP', 6],
+        Gb: ['FLAT', 6],
+        "C#": ['SHARP', 7],
+        Cb: ['FLAT', 7],
     }
 
+    const majorScaleHeptatonic = [0, 2, 4, 5, 7, 9,11,12]
+    const majorScaleTritonic = [0, 4, 7]
+
+    var key
+
+    var initialNoteTreble = "B4"
+    var initialNoteBass = "B2"
+
+    function buildScale(initialNote, scaleType = majorScaleHeptatonic) {
+        key = Object.keys(keyObject).find(key=> initialNote.replace(/\d/g, "").includes(key) )
+        const notes = Object.keys(frequencyNoteMap440)
+        const initialIndex = notes.findIndex((val) => val === initialNote)
+        const scale = Array(scaleType.length).fill(null).map((val, index) => notes[initialIndex + scaleType[index]])
+        console.log(scale, scaleType)
+        return scale
+    }
+
+    var builtScaleTreble =  buildScale(initialNoteTreble)
+
+    var builtScaleBass = buildScale(initialNoteBass, majorScaleTritonic)
+
     var durations = [
-        0.25, 0.5, 1, 2
+        /* 0.25,  */0.5, 1, 2
     ]
+
     var bassDurations = [
         1,2
     ]
@@ -510,7 +532,6 @@
     })
     const numberOfMeasures = 2
     const timeSignatureBeats = 4
-    const key = "C"
     // timeSignatureUnit = 4
     var secondsPerBeat = 60 / bpm         
     var topLine = 50
@@ -597,7 +618,6 @@
     function randomise(){
         SOUND = new AudioContext()
 
-        const noteList = cMajor
         let currentDistance = 0
         let index = 0
         let bassIndex = 0
@@ -610,7 +630,7 @@
 
             bassObject[bassIndex] = {
                 duration: bassNLU,
-                name: bassGNotes[Math.floor(Math.random() * bassGNotes.length)]
+                name: builtScaleBass[Math.floor(Math.random() * builtScaleBass.length)]
             }
 
             currentDistance += bassNLU
@@ -630,7 +650,7 @@
     
             songObject[index] = {
                 duration: noteLengthUnit, 
-                name: noteList[Math.floor(Math.random() * noteList.length)]
+                name: builtScaleTreble[Math.floor(Math.random() * builtScaleTreble.length)]
             }
 
             currentDistance += noteLengthUnit       
@@ -641,7 +661,7 @@
             index++
         }
         currentDistance = 0
-        durations = [0.25, 0.5, 1, 2]
+        durations = [/* 0.25, */ 0.5, 1, 2]
         })
         var totalSongDistance = Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
 
@@ -968,14 +988,14 @@
             const noteNumber = i
             const noteDuration = songObject[i].duration * secondsPerBeat
             const songElapsed = Object.values(songObject).slice(0,i).reduce((acc, obj)=> acc + obj.duration * secondsPerBeat, 0)
-            playSound(frequencyNoteMap[noteName], songElapsed, noteNumber, noteDuration)
+            playSound(frequencyNoteMap440[noteName], songElapsed, noteNumber, noteDuration)
         }
         for (let ind = 0; ind < Object.keys(bassObject).length; ind++) {
             const noteName = bassObject[ind].name
             const noteNumber = ind
             const noteDuration = bassObject[ind].duration * secondsPerBeat
             const songElapsed = Object.values(bassObject).slice(0,ind).reduce((acc, obj)=> acc + obj.duration * secondsPerBeat, 0)
-            playSound(frequencyNoteMap[noteName], songElapsed, noteNumber, noteDuration)
+            playSound(frequencyNoteMap440[noteName], songElapsed, noteNumber, noteDuration)
         }
     }
 
