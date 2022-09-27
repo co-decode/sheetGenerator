@@ -77,7 +77,7 @@
 
     var BUTTON = document.getElementById('sound')
 
-    const songObject = {}
+    const trebleObject = {}
     const bassObject = {}
     const songDurations = []
     const songNoteNames = []
@@ -543,7 +543,6 @@
          builtScaleTreble = Array(scaleTypeTreble.length).fill(null).map((val, index) => notes[initialIndexTreble + scaleTypeTreble[index]])
          builtScaleBass = Array(scaleTypeBass.length).fill(null).map((val, index) => notes[initialIndexBass + scaleTypeBass[index]])
 
-        console.log(builtScaleBass, builtScaleTreble)
     }
 
     buildScale()
@@ -662,7 +661,7 @@
         let currentDistance = 0
         let index = 0
         let bassIndex = 0
-        Object.keys(songObject).forEach(noteNumber => delete songObject[noteNumber])
+        Object.keys(trebleObject).forEach(noteNumber => delete trebleObject[noteNumber])
         Object.keys(bassObject).forEach(noteNumber => delete bassObject[noteNumber])
         
         Array(numberOfMeasures).fill(null).forEach((nothing, measure) => {                 // Number of Musical Measures
@@ -689,7 +688,7 @@
 
 
     
-            songObject[index] = {
+            trebleObject[index] = {
                 duration: noteLengthUnit, 
                 name: builtScaleTreble[Math.floor(Math.random() * builtScaleTreble.length)]
             }
@@ -704,7 +703,7 @@
         currentDistance = 0
         durations = [/* 0.25, */ 0.5, 1, 2]
         })
-        var totalSongDistance = Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
+        var totalSongDistance = Object.values(trebleObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
 
         const distanceDiv = document.getElementById("distance")
         distanceDiv.innerText = `${totalSongDistance} px`
@@ -728,8 +727,6 @@
     window.addEventListener('resize', fitToScreen)
     
     function drawSheet() {
-
-
         var {width, height} = CANVAS
         ctx.fillStyle = "black"
         ctx.font = "40px bravura"
@@ -746,12 +743,12 @@
         var halfToneDistance = 5
         var songDistance = 0        // The number of pixels from the start to the current note
         // var songLineDistance = 0
-        var totalSongDistance = Object.values(songObject).reduce((a,obj) =>
+        var totalSongDistance = Object.values(trebleObject).reduce((a,obj) =>
             a + obj.duration * unitDistance, 0)
         var numberOfStaves = Math.ceil(totalSongDistance/barWidth)
 
-        
-        Object.values(songObject).forEach((obj,noteNumber)=> {
+        function drawNotes(songObject) {
+            Object.values(songObject).forEach((obj,noteNumber)=> {
             const noteDuration = obj.duration
             const offset = Object.keys(offsetMap)
                 .find(offsetKey => offsetMap[offsetKey]
@@ -841,7 +838,101 @@
             songDistance += unitDistance * noteDuration
         })
         songDistance = 0
-        Object.values(bassObject).forEach((obj,noteNumber)=> {
+        }
+
+        drawNotes(trebleObject)
+        drawNotes(bassObject)
+        /* Object.values(trebleObject).forEach((obj,noteNumber)=> {
+            const noteDuration = obj.duration
+            const offset = Object.keys(offsetMap)
+                .find(offsetKey => offsetMap[offsetKey]
+                    .some(noteName=> new RegExp(noteName)
+                        .test(obj.name)))
+
+            
+            ctx.fillText(noteHead[noteDuration],// Draw note head
+                startStaffX + initialOffset + songDistance % barWidth, 
+                topLine + 0.5 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth))
+            if (noteDuration <= 2) {            // Draw note bars and tails
+                if (offset > 4) {
+                    ctx.fillRect(
+                        startStaffX + initialOffset + songDistance % barWidth + 10,
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                        2,
+                        -30)
+                    if (noteDuration === 0.5) {
+                        ctx.fillText('\ue240', 
+                        startStaffX + initialOffset + songDistance % barWidth + 10, 
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) - 35)
+                    }
+                    else if (noteDuration === 0.25) {
+                        ctx.fillText('\ue242', 
+                        startStaffX + initialOffset + songDistance % barWidth + 10, 
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) - 35)
+                    }
+                }
+                else {
+                    ctx.fillRect(
+                        startStaffX + initialOffset + songDistance % barWidth,
+                        topLine + 0.5 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                        2,
+                        30)
+                    if (noteDuration === 0.5) {
+                        ctx.fillText('\ue241', startStaffX + initialOffset + songDistance % barWidth,
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) + 35)
+                    }
+                    else if (noteDuration === 0.25) {
+                        ctx.fillText('\ue243', startStaffX + initialOffset + songDistance % barWidth,
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) + 35)
+                    }
+                }
+            }
+
+            function findOffset(note) {
+                return parseInt(Object.keys(offsetMap).find(offset => offsetMap[offset].includes(note)))
+            }
+
+            if (obj.name === "C4") {            // C4 bar
+                ctx.fillRect(
+                    startStaffX + initialOffset + songDistance % barWidth - 0.3 * 30, 
+                    topLine + halfToneDistance * findOffset("C4") + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                    30,
+                    1)      
+                }
+            else if (findOffset(obj.name) < findOffset("G5")) {
+                ctx.fillRect(
+                    startStaffX + initialOffset + songDistance % barWidth - 0.3 * 30, 
+                    topLine + halfToneDistance * findOffset("A5") + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                    30,
+                    1)
+                if (findOffset(obj.name) < findOffset("B5")) {
+                    ctx.fillRect(
+                        startStaffX + initialOffset + songDistance % barWidth - 0.3 * 30, 
+                        topLine + halfToneDistance * findOffset("C6") + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                        30,
+                        1)
+                }
+            }
+            else if (findOffset(obj.name) > findOffset("F2")) {
+                ctx.fillRect(
+                    startStaffX + initialOffset + songDistance % barWidth - 0.3 * 30, 
+                    topLine + halfToneDistance * findOffset("E2") + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                    30,
+                    1)
+                if (findOffset(obj.name) > findOffset("D2")) {
+                    ctx.fillRect(
+                        startStaffX + initialOffset + songDistance % barWidth - 0.3 * 30, 
+                        topLine + halfToneDistance * findOffset("C2") + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                        30,
+                        1)
+                }
+                
+            }
+            
+            songDistance += unitDistance * noteDuration
+        })
+        songDistance = 0 */
+        /* Object.values(bassObject).forEach((obj,noteNumber)=> {
             const noteDuration = obj.duration
             const offset = Object.keys(offsetMap)
                 .find(offsetKey => offsetMap[offsetKey]
@@ -927,7 +1018,7 @@
             }
             
             songDistance += unitDistance * noteDuration
-        })
+        }) */
         Array(numberOfStaves).fill(null).forEach((v, index) => {                                    // Number of grand staves
             ctx.font = `100px bravura`
             ctx.fillText("\uE000", 25, topLine + 100 + distanceBetweenStaves * index)               // Staff Bracket
@@ -1003,19 +1094,19 @@
         
         elapsed = timestamp - start - pauseTime
         
-        const totalTimeWhenNextNotePlayed = Object.values(songObject).slice(0,i).reduce((a,v) => a + v.duration, 0) * unitDistance/secondsPerBeat
+        const totalTimeWhenNextNotePlayed = Object.values(trebleObject).slice(0,i).reduce((a,v) => a + v.duration, 0) * unitDistance/secondsPerBeat
         
         if (x + barWidth * currentStaff >= 
-        Object.values(songObject)
+        Object.values(trebleObject)
         .slice(0,i)
         .reduce((a,v) => a + v.duration, 0) * unitDistance/secondsPerBeat
-        && i <  Object.values(songObject).length - 1
+        && i <  Object.values(trebleObject).length - 1
         ) i++
         
-        const durationOfNotesPlayed = Object.values(songObject).slice(0,i-1).reduce((a,v) => a + v.duration, 0) * 1000
+        const durationOfNotesPlayed = Object.values(trebleObject).slice(0,i-1).reduce((a,v) => a + v.duration, 0) * 1000
         const noteElapsed = elapsed - durationOfNotesPlayed
-        const noteDuration = songObject[i-1].duration
-        // songDistance = Object.values(songObject).slice(0,i).reduce((a,obj) => a + obj.duration * unitDistance, 0)
+        const noteDuration = trebleObject[i-1].duration
+        // songDistance = Object.values(trebleObject).slice(0,i).reduce((a,obj) => a + obj.duration * unitDistance, 0)
         
         
         // x = (durationOfNotesPlayed*0.001 * unitDistance/secondsPerBeat) % (barWidth) + (noteElapsed*0.001/noteDuration) * unitDistance/secondsPerBeat * noteDuration
@@ -1024,7 +1115,7 @@
         
         
         var offsetToFirstLine = topLine + 1
-        var totalSongDistance = Object.values(songObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
+        var totalSongDistance = Object.values(trebleObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
         
         
         
@@ -1092,11 +1183,11 @@
 
         window.requestAnimationFrame(loop)
 
-        for (let i = 0; i < Object.keys(songObject).length; i++) {
-            const noteName = songObject[i].name
+        for (let i = 0; i < Object.keys(trebleObject).length; i++) {
+            const noteName = trebleObject[i].name
             const noteNumber = i
-            const noteDuration = songObject[i].duration * secondsPerBeat
-            const songElapsed = Object.values(songObject).slice(0,i).reduce((acc, obj)=> acc + obj.duration * secondsPerBeat, 0)
+            const noteDuration = trebleObject[i].duration * secondsPerBeat
+            const songElapsed = Object.values(trebleObject).slice(0,i).reduce((acc, obj)=> acc + obj.duration * secondsPerBeat, 0)
             playSound(frequencyNoteMap440[noteName], songElapsed, noteNumber, noteDuration)
         }
         for (let ind = 0; ind < Object.keys(bassObject).length; ind++) {

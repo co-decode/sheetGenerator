@@ -68,6 +68,7 @@ FIXED Logic for determining key signature based on starting note is flawed
 FIXED I want to set an initial note for both bass and treble without having to specify how far they are apart
 
 I need to work on the under and over note lines: C2 up to C6.
+    - Is it possible to find a general solution?
 
 
 A lot of the code for drawing treble and bass notes is duplicated, see if you can collapse them to one pass.    
