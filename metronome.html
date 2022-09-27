@@ -8,36 +8,62 @@
 </head>
 <body>
     <button onclick="startMetronome()">Start</button>
+    <label>
+        BPM:&nbsp;
+        <input id="metronomeBPM"/>
+    </label>
 </body>
 <script>
-    var SOUND = new AudioContext()
-    var time = 0
-    var noteDuration = 1
-
-    var start
-
+    var METRONOME = new AudioContext()
+    var metronome_bpm = 120
+    var metronome_milliSecondsPerBeat = (60 / metronome_bpm) * 1000
+    var metronomeStopped = false
+    
+    var metronomeBPM = document.getElementById('metronomeBPM')
+    var metronome_start
+    var metronome_toneIndex 
+    metronomeBPM.addEventListener("change", (e) => {
+        metronome_bpm = parseInt(e.target.value); 
+        metronome_milliSecondsPerBeat = (60 / metronome_bpm) * 1000; 
+        // console.log("changed", bpm)
+        metronomeStopped = true
+        METRONOME.close()/* .then(() => {METRONOME = new AudioContext()}) */
+    })
+    
     function playMetronome() {
-        const osc =  SOUND.createOscillator()
-        const gainNode = SOUND.createGain()
+        const osc =  METRONOME.createOscillator()
+        const gainNode = METRONOME.createGain()
         osc.connect(gainNode)
-        gainNode.connect(SOUND.destination)
-        gainNode.gain.exponentialRampToValueAtTime(0.1, SOUND.currentTime + time )
-        gainNode.gain.linearRampToValueAtTime(0.00001, SOUND.currentTime + noteDuration + time)
-        osc.type = 'triangle'
+        gainNode.connect(METRONOME.destination)
+        // gainNode.gain.exponentialRampToValueAtTime(0.1, METRONOME.currentTime )
+        gainNode.gain.linearRampToValueAtTime(0.1, METRONOME.currentTime )
+        gainNode.gain.linearRampToValueAtTime(0, METRONOME.currentTime + (metronome_milliSecondsPerBeat / 1000))
+        osc.type = 'sine'
         // osc.frequency.value = frequency
-        osc.start(SOUND.currentTime + time)
+        osc.start(METRONOME.currentTime)
     }
-
+    
     function startMetronome() {
         window.requestAnimationFrame((timestamp) => {
-            if (start === undefined) start = timestamp - 1000;
-            var elapsed = timestamp - start
-            console.log(elapsed)
-            if (Number(elapsed.toFixed(0)) >= 1000) {
-                start = timestamp
-                playMetronome()
+            if (metronome_start === undefined) {
+            metronome_start = timestamp;
+            metronome_toneIndex = 0
+            playMetronome()
+        }
+        if (metronomeStopped) {
+            metronomeStopped = false; 
+            metronome_start = undefined
+            METRONOME = new AudioContext()
+            window.cancelAnimationFrame(startMetronome)
+            return
+        }
+        var elapsed = timestamp - metronome_start
+        if (parseInt(elapsed - metronome_toneIndex * metronome_milliSecondsPerBeat) >= metronome_milliSecondsPerBeat) {
+            console.log(elapsed, metronome_toneIndex)
+            metronome_toneIndex++
+            playMetronome()
             }
-            window.requestAnimationFrame(startMetronome)
+        window.requestAnimationFrame(startMetronome)
         })
     }
 

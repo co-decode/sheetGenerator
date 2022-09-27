@@ -71,4 +71,4 @@ I need to work on the under and over note lines: C2 up to C6.
     - Is it possible to find a general solution?
 
 
-A lot of the code for drawing treble and bass notes is duplicated, see if you can collapse them to one pass.    
+DONE - A lot of the code for drawing treble and bass notes is duplicated, see if you can collapse them to one pass.    
