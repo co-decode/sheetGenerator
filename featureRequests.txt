@@ -67,8 +67,29 @@ FIXED Logic for determining key signature based on starting note is flawed
 
 FIXED I want to set an initial note for both bass and treble without having to specify how far they are apart
 
-I need to work on the under and over note lines: C2 up to C6.
-    - Is it possible to find a general solution?
 
 
 DONE - A lot of the code for drawing treble and bass notes is duplicated, see if you can collapse them to one pass.    
+
+
+DONE Need to be able to control the amount of measures per bar, maybe limit to 3 or 4.
+DONE Need to be able to control the number of measures, and handle scrolling.
+DONE It would be nice to have multiple time signatures, at least to have the 3 by 4.
+
+
+DONE ? Shift the key signature back when the time signature doesn't appear on the staff
+    Shifting the notes back would be nice as well, but it seems this is going to upset a lot of the moving parts.
+
+
+
+I need to work on the under and over note lines: C2 up to C6.
+    - Is it possible to find a general solution?
+
+Truncate the ending staff when the notes don't reach the final measure allotment
+UI stuff
+Canvas will just extend, or maybe the number of lines will be limited.
+Playing chords
+
+LATER: 
+Playing chunks, such as arpeggios.
+
