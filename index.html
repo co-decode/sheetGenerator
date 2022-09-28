@@ -5,15 +5,70 @@
     <link rel="icon" href="./music.svg">
     <!-- <link rel="preload" href="index.css" as="style"> -->
     <style>
+        @font-face {
+            font-family: "Allura";
+            src: url("./fonts/allura-regular.woff2");
+        }
     body {
         margin: 0;
         /* overflow:hidden; */
     }
+    /* #sheet-music {
+        display:none;
+    } */
+    .title {
+        font-family:"Allura";
+        font-size: 36px;
+        margin:0;
+        margin-top:10px;
+        text-align: center;
+    }
+    #canvas_container {
+        position:relative;
+    }
     #animation {
         position:absolute;
+        left:0;
         top: 0;
     }
-    #sound {
+    #button_container {
+        position:fixed;
+        bottom:0;
+        width: 100%;
+        margin-bottom:20px;
+        display:flex;
+        justify-content: center;
+    }
+    #button_container > div {
+        cursor:pointer;
+    }
+    #play_image {
+        width: 50px;
+        height: 50px;
+        background-image: url("/images/play.svg");
+    }
+    #pause_image {
+        width: 50px;
+        height: 50px;
+        background-image: url("/images/pause.svg");
+    }
+    #stop_image {
+        width: 50px;
+        height: 50px;
+        background-image: url("/images/stop.svg");
+    }
+    #replay_image {
+        width: 50px;
+        height: 50px;
+        background-image: url("/images/replay.svg");
+    }
+    #randomise_image {
+        width: 50px;
+        height: 50px;
+        background-image: url("/images/roll.svg");
+        background-size: cover;
+    }
+    /* #sound {
         position:absolute;
         top: 10px;
         left: 10px;
@@ -68,28 +123,28 @@
         position:absolute;
         top: 565px;
         left: 705px;
-    }
+    } */
+   
     </style>
 </head>
 <body>
-    <canvas id="sheet-music"></canvas>
-    <canvas id="animation"></canvas>
+    <h1 class="title">Sheet Generator</h1>
+    <div id="canvas_container">
+        <canvas id="sheet-music"></canvas>
+        <canvas id="animation"></canvas>
+    </div>
     <button id="sound" onClick="play()">Play Sound</button>
-    <button id="randomise" onClick="randomise()">Randomise</button>
     <button id="pause" onClick="pausePlayback()">Pause</button>
     <button id="stop" onClick="stopPlayback()">Stop</button>
     <button id="replay" onClick="toggleReplay()">Replay: Off</button>
+    <button id="randomise" onClick="randomise()">Randomise</button>
     <label id="bpm">BPM:
         <input id="bpmInput" type="number" min="10" max="320" />
     </label>
     <div id="distance"></div>
 
-    <button id="start_metronome" onclick="startMetronome()">Start Metronome</button>
-    <button id="stop_metronome" onclick="stopMetronome()">Stop Metronome</button>
-    <label id="metronome_label">
-        BPM:&nbsp;
-        <input id="metronomeBPM"/>
-    </label>
+
+    
 
     <label id="key_changer_label">
         Key:&nbsp;
@@ -132,6 +187,21 @@
             <option>3</option>
             <option>4</option>
         </select>
+    </label>
+
+    <div id="button_container">
+        <div onClick="play()" id="play_image"></div>
+        <div onClick="pausePlayback()" id="pause_image"></div>
+        <div onClick="stopPlayback()" id="stop_image"></div>
+        <div onClick="toggleReplay()" id="replay_image"></div>
+        <div onClick="randomise()" id="randomise_image"></div>
+    </div>
+
+    <button id="start_metronome" onclick="startMetronome()">Start Metronome</button>
+    <button id="stop_metronome" onclick="stopMetronome()">Stop Metronome</button>
+    <label id="metronome_label">
+        BPM:&nbsp;
+        <input id="metronomeBPM"/>
     </label>
 </body>
 <script>
@@ -518,6 +588,7 @@
         randomise()
     }
 
+    document.getElementById("keyChanger").value = key
     document.getElementById("measures").value = numberOfMeasures
     document.getElementById("measures_per_bar").value = numberOfMeasuresPerBar
     document.getElementById("beats_per_measure").value = timeSignatureBeats
@@ -692,9 +763,9 @@
     
     function fitToScreen() {
         CANVAS.width = window.innerWidth
-        CANVAS.height = window.innerHeight*0.8
+        CANVAS.height = window.innerHeight * 0.5
         ANIMATION.width = window.innerWidth
-        ANIMATION.height = window.innerHeight*0.8
+        ANIMATION.height = window.innerHeight * 0.5
         barWidth = window.innerWidth - 2 * startStaffX - initialOffset - bufferToEnd
         unitDistance = barWidth / (numberOfBeatsPerBar)
         drawSheet()
@@ -963,6 +1034,7 @@
         
         // x = (durationOfNotesPlayed*0.001 * unitDistance/secondsPerBeat) % (barWidth) + (noteElapsed*0.001/noteDuration) * unitDistance/secondsPerBeat * noteDuration
         x = (durationOfNotesPlayed * 0.001 * unitDistance/secondsPerBeat) % (barWidth) + (noteElapsed*0.001) * unitDistance/secondsPerBeat
+
         
         
         
@@ -976,7 +1048,7 @@
         currentStaff = Math.floor(((durationOfNotesPlayed + noteElapsed + 26)*0.001 * unitDistance/secondsPerBeat) / (barWidth))
         // SMUDGE factor, that 26 is looking 26 milliseconds into the future to determine whether the bar is within 26 milliseconds of the next line's first note. Why 26 ? Not sure, I think and hope that it is just javascript's refresh rate, hopefully it is NOT my buffer end length or my 0.25 ending note... 'cause I can't wrap my head around either of those.
         // 26 milliseconds = 0.026 * unitDistance, unitDistance = 1 beat in pixels, bpm = 30, so 2 seconds per beat, 0.026/2 beats, === 0.013 pixels, Almost certainly nothing to do with the buffer or the ending note
-            // logging shows that there is a 16 to 17 ms window between each call, that is 1 / 60th of a second: the framerate.
+        // logging shows that there is a 16 to 17 ms window between each call, that is 1 / 60th of a second: the framerate.
             // This can vary between screens. Not sure if I can get access to the refresh rate programmatically
             
             y = distanceBetweenStaves * Math.floor((durationOfNotesPlayed*0.001 * unitDistance/secondsPerBeat) / (barWidth))
