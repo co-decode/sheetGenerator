@@ -83,11 +83,15 @@ DONE ? Shift the key signature back when the time signature doesn't appear on th
 DONE Canvas will extend, make it change its dimensions based on the amount of bars it needs to draw
 
 FIXED There is a bug with the Stop button for the main playback. Double clicking stop will require the play button to be double clicked to see the animated bar.
+DONE UI stuff
+DONE Give the metronome a pulse
+    DONE Provide a bass frequency based on the key.
+    DONE Play with gain changes and/or lesser frequency differences because the octave is a bit hard to hear
 
 
-UI stuff
 Playing chords
-Give the metronome a pulse
+Scale Selection
+    Minor Key Object if very different... any better way to deal with this other than expanding edge cases?
 
 Truncate the ending staff when the notes don't reach the final measure allotment
 

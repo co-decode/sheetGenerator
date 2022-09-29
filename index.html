@@ -11,10 +11,25 @@
         }
     body {
         margin: 0;
-        /* overflow:hidden; */
+        margin-bottom:50px;
+        overflow-x:hidden;
     }
     input {
-        width: 6ch;
+        width: 3ch;
+        text-indent:0.25ch;
+        font-family:"Allura";
+        font-size:25px;
+        border:black 1px solid;
+        border-radius: 2px;
+    }
+    
+    select {
+        text-indent:0.25ch;
+        font-family:"Allura";
+        font-size:25px;
+        background-color:white;
+        border:black 1px solid;
+        border-radius: 2px;
     }
     /* #sheet-music {
         display:none;
@@ -34,13 +49,38 @@
         left:0;
         top: 0;
     }
-    #button_container {
+    #ui_container {
         position:fixed;
         bottom:0;
         width: 100%;
-        margin-bottom:20px;
+        /* margin-bottom:20px; */
+        display:grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        justify-items: center;
+        align-items: center;
+    }
+    #options_container {
+        font-family:"Allura";
+        font-weight:bold;
+        font-size:30px;
+        display: flex;
+        gap:20px;
+        align-items: center;
+
+    }
+
+    #settings_image {
+        width:35px;
+        height:35px;
+        background-size:contain;
+        background-repeat: no-repeat;
+        background-image: url("images/settings.svg");
+        cursor:pointer;
+    }
+
+    #button_container {
         display:flex;
-        justify-content: center;
+        gap:20px;
     }
     #button_container > div {
         cursor:pointer;
@@ -97,62 +137,73 @@
     .pauseImage {
         background-image: url("/images/pause.svg")
     }
-    /* #sound {
-        position:absolute;
-        top: 10px;
-        left: 10px;
+    .stopImage {
+        background-image: url("/images/stop.svg")
     }
-    #randomise {
-        position: absolute;
-        top: 10px;
-        left: 200px;
-    }
-    #distance {
-        position: absolute;
-        top: 10px;
-        left: 400px;
-    }
-    #pause {
-        position: absolute;
-        top: 10px;
-        left: 600px;
-    }
-    #stop {
-        position: absolute;
-        top: 10px;
-        left: 800px;
-    }
-    #replay {
-        position: absolute;
-        top: 10px;
-        left: 1000px;
-    }
-    #bpm {
-        position: absolute;
-        top: 565px;
-        left: 5px;
 
+    #metronome_container {
+        text-align: center;
+        font-family:"Allura";
+        font-weight:bold;
+        font-size:30px;
+        margin-bottom:10px;
+        /* margin-right: 50px; */
+        /* justify-self: end; */
     }
-    #start_metronome {
-        position: absolute;
-        top: 565px;
-        left: 205px;     
+
+
+    #metronome_bottom_line {
+        display:flex;
+        gap: 20px;
+        font-size: 20px;
+        align-items: center;
     }
-    #stop_metronome {
-        position: absolute;
-        top: 565px;
-        left: 355px;
+
+
+    #start_metronome, #stop_metronome {
+        background-size:contain;
+        background-repeat:no-repeat;
+        
+        cursor:pointer;
+        width:25px;
+        height:25px;
     }
-    #metronome_label {
-        position: absolute;
-        top: 565px;
-        left: 505px;
-    }
-    #key_changer_label {
+
+    #options_menu {
         position:absolute;
-        top: 565px;
-        left: 705px;
-    } */
+        border:black double 5px;
+        height:75%;
+        width:75%;
+        transform:translate(-50%,-50%);
+        background-color: white;
+        top:50%;
+        left:50%;
+
+        font-size:40px;
+        font-family:"Allura";
+        font-weight:bold;
+    }
+    .options_menu_display {
+        display:flex;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    #close_image {
+        position:absolute;
+        background-size:contain;
+        background-repeat:no-repeat;
+        background-image: url("./images/close.svg");
+        width:50px;
+        height:50px;
+        top:10px;
+        right:10px;
+        cursor: pointer;
+    }
+    .invisible {
+        visibility:hidden;
+    }
    
     </style>
 </head>
@@ -162,25 +213,12 @@
         <canvas id="sheet-music"></canvas>
         <canvas id="animation"></canvas>
     </div>
-    <button id="sound" onClick="play()">Play Sound</button>
-    <button id="pause" onClick="pausePlayback()">Pause</button>
-    <button id="stop" onClick="stopPlayback()">Stop</button>
-    <button id="replay" onClick="toggleReplay()">Replay: Off</button>
-    <button id="randomise" onClick="randomise()">Randomise</button>
-    
-    <div id="distance"></div>
-
-
     
 
-    
-
-    
-
-    <div id="button_container">
-        <div>
-            <label id="bpm">BPM:
-                <input id="bpmInput" type="number" min="10" max="320" />
+    <div id="ui_container">
+        <div id="options_container">
+            <label id="bpm">BPM:&nbsp;
+                <input id="bpmInput" min="10" max="320" />
             </label>
             <label id="key_changer_label">
                 Key:&nbsp;
@@ -202,42 +240,56 @@
                 <option>Cb</option>
             </select>
             </label>
-        <br/>
-            <label id="measures_label">
-                Measures
-                <input type="number"  max="6" min="1" id="measures" onchange="changeMeasures(this)" />
-            </label>
-            <label id="measures_per_bar_label">
-                Measures per Bar
-                <select id="measures_per_bar" onchange="changeMeasuresPerBar(this)">
-                    <option>1</option>
-                    <option>2</option>
-                    <option>3</option>
-                    <option>4</option>
-                </select>
-            </label>
-            <label id="beats_per_measure_label">
-                Beats per Measure
-                <select id="beats_per_measure" onchange="changeBeatsPerMeasure(this)">
-                    <option>2</option>
-                    <option>3</option>
-                    <option>4</option>
-                </select>
-            </label>
+            <div id="settings_image" onclick="toggleOptionsMenu()"></div>
         </div>
-        <div onClick="play()" id="play_image"></div>
-        <div onClick="stopPlayback()" id="stop_image" class="hide"></div>
-        <div onClick="pausePlayback()" id="pause_image" class="pauseImage hide"></div>
-        <div onClick="randomise()" id="randomise_image"></div>
-        <div onClick="toggleReplay()" id="replay_image">Off</div>
-        <div>
-            <button id="start_metronome" onclick="startMetronome()">Start Metronome</button>
-            <button id="stop_metronome" onclick="stopMetronome()">Stop Metronome</button>
+        <div id="button_container">
+            <div onClick="play()" id="play_image"></div>
+            <div onClick="pausePlayback()" id="pause_image" class="pauseImage hide"></div>
+            <div onClick="stopPlayback()" id="stop_image" class="hide"></div>
+            <div onClick="randomise()" id="randomise_image"></div>
+            <div onClick="toggleReplay()" id="replay_image">Off</div>
+        </div>
+        <div id="metronome_container">
+        <div>Metronome</div>
+        <!-- <button id="start_metronome" onclick="startMetronome()">Start Metronome</button> -->
+        <div id="metronome_bottom_line">
+            <div id="start_metronome" class="playImage" onclick="startMetronome()"></div>
+            <!-- <button id="stop_metronome" class="stopImage" onclick="stopMetronome()">Stop Metronome</button> -->
+            <div id="stop_metronome" class="stopImage hide" onclick="stopMetronome()"></div>
             <label id="metronome_label">
                 BPM:&nbsp;
                 <input id="metronomeBPM"/>
             </label>
         </div>
+    </div>
+    </div>
+    <div id="options_menu" class="hide">
+        <div id="close_image" onclick="toggleOptionsMenu()"></div>
+        <label id="measures_label">
+            Measures:&nbsp;
+            <input  max="6" min="1" id="measures" onchange="changeMeasures(this)" />
+        </label>
+        <label id="measures_per_bar_label">
+            Measures per Bar:&nbsp;
+            <select id="measures_per_bar" onchange="changeMeasuresPerBar(this)">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+            </select>
+        </label>
+        <label id="beats_per_measure_label">
+            Beats per Measure:&nbsp;
+            <select id="beats_per_measure" onchange="changeBeatsPerMeasure(this)">
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+            </select>
+        </label>
+    </div>
+    <div class="invisible">
+        <div class="stopImage"></div>
+        <div class="pauseImage"></div>
     </div>
 
     
@@ -580,6 +632,23 @@
         "C#": ['SHARP', 7],
         Cb: ['FLAT', 7],
     }
+    /* const minorKeyObject = {
+        A: [null, 0],
+        E: ['SHARP', 1],
+        B: ['SHARP', 2],
+        "F#/Gb": ['SHARP', 3],
+        "C#/Db": ['SHARP', 4],
+        "G#/Ab": ['SHARP', 5],
+        D: ['FLAT', 1],
+        G: ['FLAT', 2],
+        C: ['FLAT', 3],
+        F: ['FLAT', 4],
+        Bb: ['FLAT', 5],
+        "D#": ['SHARP', 6],
+        Eb: ['FLAT', 6],
+        "A#": ['SHARP', 7],
+        Ab: ['FLAT', 7],
+    } */
 
     const majorHeptatonic = [0, 2, 4, 5, 7, 9, 11, 12]
     const majorPentatonic = [0, 2, 4, 7, 9, 12]
@@ -590,12 +659,14 @@
     const minorPentatonic = [0, 3, 5, 7, 10, 12]
     const minorTritonic = [0, 3, 7, 12]
 
-    var key = "B"
+    var key = "C"
 
     var bpm = 60
-    bpmInput.value = bpm
+    bpmInput.placeholder = bpm
     bpmInput.addEventListener("change", (e) => {
+        if (!parseInt(e.target.value)) return
         bpm = parseInt(e.target.value); 
+        bpmInput.placeholder = bpm
         secondsPerBeat = 60 / bpm; 
         unitDistance = barWidth / (numberOfBeatsPerBar); 
         stopPlayback(); 
@@ -632,10 +703,13 @@
     document.getElementById("measures_per_bar").value = numberOfMeasuresPerBar
     document.getElementById("beats_per_measure").value = timeSignatureBeats
 
-
+    function toggleOptionsMenu() {
+        document.getElementById("options_menu").classList.toggle("options_menu_display")
+        document.getElementById("options_menu").classList.toggle("hide")
+    }
 
     function changeMeasures(el) {
-        if (el.value > 0 && el.value <= 6) {
+        if (el.value > 0 && el.value <= 12) {
             numberOfMeasures = parseInt(el.value)
             randomise()
         }
@@ -663,14 +737,20 @@
     var builtScaleBass
     
     function buildScale() {
+
+
+
         let initialNoteTreble = key + rootOctaveTreble
         let initialNoteBass = key + rootOctaveBass
         
         const notes = Object.keys(frequencyNoteMap440)
 
-        if (["A#", "Bb", "D#", "Eb", "G#", "Ab"].some(name => name === key)) {
-            key = notes.find(name => name.includes(key)).replace(/\d/g, "")
+        if (["A#/Bb", "D#/Eb", "G#/Ab"].some(name => name === key)) {
+            initialNoteTreble = initialNoteTreble.replace("/", `${rootOctaveTreble}/`)
+            initialNoteBass = initialNoteBass.replace("/", `${rootOctaveBass}/`)
+            // key = notes.find(name => name.includes(key)).replace(/\d/g, "")
         }
+        // console.log(initialNoteTreble)
 
         if (key.includes("b") || key.includes("#")) {
             if (key === "Cb") {
@@ -795,8 +875,8 @@
         })
         var totalSongDistance = Object.values(trebleObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
 
-        const distanceDiv = document.getElementById("distance")
-        distanceDiv.innerText = `${totalSongDistance} px`
+        // const distanceDiv = document.getElementById("distance")
+        // distanceDiv.innerText = `${totalSongDistance} px`
 
         fitToScreen()
     }
@@ -999,7 +1079,7 @@
                 const measuresWithNotesLeft = numberOfMeasures - index * numberOfMeasuresPerBar
 
                 if (measuresWithNotesLeft >= numberOfMeasuresPerBar) {               // Draw measure line before next note, otherwise draw it at the end of the previous note.
-                    drawLine(5)                                                     // !! I might need to truncate the staff here, it looks a little empty
+                    drawLine(8)                                                     // !! I might need to truncate the staff here, it looks a little empty
                 }
                 else if (measuresWithNotesLeft < numberOfMeasuresPerBar && measureIndex >= measuresWithNotesLeft) {
                     drawLine(-bufferToEnd)
@@ -1144,7 +1224,7 @@
         pauseTime = 0
         animationPaused = false
         
-        document.getElementById("pause").innerText = "Pause"
+        // document.getElementById("pause").innerText = "Pause"
         document.getElementById("play_image").classList.add("hide")
         document.getElementById("randomise_image").classList.add("hide")
         document.getElementById("stop_image").classList.remove("hide")
@@ -1173,12 +1253,12 @@
         if (SOUND.state === "running"){
             document.getElementById("pause_image").classList.remove("pauseImage")
             document.getElementById("pause_image").classList.add("playImage")
-            SOUND.suspend().then(()=>{document.getElementById("pause").innerText = "Unpause"; animationPaused = true})
+            SOUND.suspend().then(()=>{/* document.getElementById("pause").innerText = "Unpause"; */ animationPaused = true})
         }
         else if (SOUND.state === "suspended") {
             document.getElementById("pause_image").classList.remove("playImage")
             document.getElementById("pause_image").classList.add("pauseImage")
-            SOUND.resume().then(() => {document.getElementById("pause").innerText = "Pause"; animationPaused = false})
+            SOUND.resume().then(() => {/* document.getElementById("pause").innerText = "Pause"; */ animationPaused = false})
         }
         else return
     }
@@ -1198,7 +1278,7 @@
             animationStopped = true
             document.getElementById("pause_image").classList.remove("playImage")
             document.getElementById("pause_image").classList.add("pauseImage")
-            SOUND.close().then(() => {document.getElementById("pause").innerText = "Pause"; SOUND = new AudioContext()})
+            SOUND.close().then(() => {/* document.getElementById("pause").innerText = "Pause";  */SOUND = new AudioContext()})
 
         }
         else return
@@ -1207,12 +1287,12 @@
     function toggleReplay() {
         replay = !replay
         if (replay) {
-            document.getElementById("replay").innerText = "Replay: On"
+            // document.getElementById("replay").innerText = "Replay: On"
             document.getElementById("replay_image").innerText = "On"
             document.getElementById("replay_image").classList.add("rotate_replay")
         }
         else if (!replay) {
-            document.getElementById("replay").innerText = "Replay: Off"
+            // document.getElementById("replay").innerText = "Replay: Off"
             document.getElementById("replay_image").innerText = "Off"
             document.getElementById("replay_image").classList.remove("rotate_replay")
         }
@@ -1243,22 +1323,24 @@
         }
     })
     
-    function playMetronome() {
+    function playMetronome(frequency, gainMultiplier) {
         const osc =  METRONOME.createOscillator()
         const gainNode = METRONOME.createGain()
         osc.connect(gainNode)
         gainNode.connect(METRONOME.destination)
         // gainNode.gain.exponentialRampToValueAtTime(0.1, METRONOME.currentTime )
-        gainNode.gain.linearRampToValueAtTime(0.1, METRONOME.currentTime )
+        gainNode.gain.linearRampToValueAtTime(0.1 * gainMultiplier, METRONOME.currentTime )
         gainNode.gain.linearRampToValueAtTime(0, METRONOME.currentTime + (metronome_milliSecondsPerBeat / 1000))
         osc.type = 'sine'
-        // osc.frequency.value = frequency
+        osc.frequency.value = frequency
         osc.start(METRONOME.currentTime)
     }
 
     function stopMetronome() {
         if (!metronomeStopped) {
             metronomeStopped = true
+            document.getElementById('stop_metronome').classList.add('hide')
+            document.getElementById('start_metronome').classList.remove('hide')
             METRONOME.close()
         }
     }
@@ -1266,10 +1348,12 @@
     function startMetronome() {
         window.requestAnimationFrame((timestamp) => {
             if (metronome_start === undefined) {
+                document.getElementById('start_metronome').classList.add('hide')
+                document.getElementById('stop_metronome').classList.remove('hide')
             metronomeStopped = false
             metronome_start = timestamp;
             metronome_toneIndex = 0
-            playMetronome()
+            playMetronome(frequencyNoteMap440[builtScaleTreble[builtScaleTreble.length - 1]], 0.75)
         }
         if (metronomeStopped) {
             metronome_start = undefined
@@ -1280,7 +1364,12 @@
         var elapsed = timestamp - metronome_start
         if (parseInt(elapsed - metronome_toneIndex * metronome_milliSecondsPerBeat) >= metronome_milliSecondsPerBeat) {
             metronome_toneIndex++
-            playMetronome()
+            if (metronome_toneIndex % timeSignatureBeats === 0) {
+                playMetronome(frequencyNoteMap440[builtScaleTreble[builtScaleTreble.length - 1]], 0.75)
+            }
+            else {
+                playMetronome(frequencyNoteMap440[builtScaleTreble[0]], 1)
+            }
             }
         window.requestAnimationFrame(startMetronome)
         })
