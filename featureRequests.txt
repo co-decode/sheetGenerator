@@ -80,19 +80,19 @@ DONE It would be nice to have multiple time signatures, at least to have the 3 b
 DONE ? Shift the key signature back when the time signature doesn't appear on the staff
     Shifting the notes back would be nice as well, but it seems this is going to upset a lot of the moving parts.
 
+DONE Canvas will extend, make it change its dimensions based on the amount of bars it needs to draw
 
-There is a bug with the Stop button for the main playback. Double clicking stop will require the play button to be double clicked to see the animated bar, however, this plays two copies of the playback, which is unacceptable.
+FIXED There is a bug with the Stop button for the main playback. Double clicking stop will require the play button to be double clicked to see the animated bar.
+
+
+UI stuff
+Playing chords
+Give the metronome a pulse
+
+Truncate the ending staff when the notes don't reach the final measure allotment
 
 I need to work on the under and over note lines: C2 up to C6.
     - Is it possible to find a general solution?
-
-Truncate the ending staff when the notes don't reach the final measure allotment
-UI stuff
-Canvas will just extend, or maybe the number of lines will be limited.
-Playing chords
-
-Give the metronome a pulse
-
 LATER: 
 Playing chunks, such as arpeggios.
 

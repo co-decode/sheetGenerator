@@ -13,6 +13,9 @@
         margin: 0;
         /* overflow:hidden; */
     }
+    input {
+        width: 6ch;
+    }
     /* #sheet-music {
         display:none;
     } */
@@ -46,27 +49,53 @@
         width: 50px;
         height: 50px;
         background-image: url("/images/play.svg");
+        background-size: contain;
+        background-repeat: no-repeat;
     }
     #pause_image {
         width: 50px;
         height: 50px;
-        background-image: url("/images/pause.svg");
+        background-size: contain;
+        background-repeat: no-repeat;
+        /* background-image: url("/images/pause.svg"); */
     }
     #stop_image {
         width: 50px;
         height: 50px;
+        background-size: contain;
+        background-repeat: no-repeat;
         background-image: url("/images/stop.svg");
     }
     #replay_image {
         width: 50px;
         height: 50px;
         background-image: url("/images/replay.svg");
+        background-size: contain;
+        background-repeat: no-repeat;
+        font-size:18px;
+        font-family:"Allura";
+        text-align: center;
+        line-height:55px;
+        
+        transition:transform 0.5s;
+    }
+    .rotate_replay {
+        transform: rotate(1turn);
     }
     #randomise_image {
         width: 50px;
         height: 50px;
         background-image: url("/images/roll.svg");
         background-size: cover;
+    }
+    .hide {
+        display: none;
+    }
+    .playImage {
+        background-image: url("/images/play.svg")
+    }
+    .pauseImage {
+        background-image: url("/images/pause.svg")
     }
     /* #sound {
         position:absolute;
@@ -138,71 +167,80 @@
     <button id="stop" onClick="stopPlayback()">Stop</button>
     <button id="replay" onClick="toggleReplay()">Replay: Off</button>
     <button id="randomise" onClick="randomise()">Randomise</button>
-    <label id="bpm">BPM:
-        <input id="bpmInput" type="number" min="10" max="320" />
-    </label>
+    
     <div id="distance"></div>
 
 
     
 
-    <label id="key_changer_label">
-        Key:&nbsp;
-    <select id="keyChanger" onchange="changeKey(this)">
-        <option>C</option>
-        <option>G</option>
-        <option>D</option>
-        <option>A</option>
-        <option>E</option>
-        <option>B</option>
-        <option>F</option>
-        <option>A#/Bb</option>
-        <option>D#/Eb</option>
-        <option>G#/Ab</option>
-        <option>Db</option>
-        <option>F#</option>
-        <option>Gb</option>
-        <option>C#</option>
-        <option>Cb</option>
-    </select>
-    </label>
+    
 
-    <label id="measures_label">
-        Number of Measures
-        <input type="number"  max="6" min="1" id="measures" onchange="changeMeasures(this)" />
-    </label>
-    <label id="measures_per_bar_label">
-        Number of Measures per Bar
-        <select id="measures_per_bar" onchange="changeMeasuresPerBar(this)">
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-        </select>
-    </label>
-    <label id="beats_per_measure_label">
-        Number of Measures per Bar
-        <select id="beats_per_measure" onchange="changeBeatsPerMeasure(this)">
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-        </select>
-    </label>
+    
 
     <div id="button_container">
+        <div>
+            <label id="bpm">BPM:
+                <input id="bpmInput" type="number" min="10" max="320" />
+            </label>
+            <label id="key_changer_label">
+                Key:&nbsp;
+            <select id="keyChanger" onchange="changeKey(this)">
+                <option>C</option>
+                <option>G</option>
+                <option>D</option>
+                <option>A</option>
+                <option>E</option>
+                <option>B</option>
+                <option>F</option>
+                <option>A#/Bb</option>
+                <option>D#/Eb</option>
+                <option>G#/Ab</option>
+                <option>Db</option>
+                <option>F#</option>
+                <option>Gb</option>
+                <option>C#</option>
+                <option>Cb</option>
+            </select>
+            </label>
+        <br/>
+            <label id="measures_label">
+                Measures
+                <input type="number"  max="6" min="1" id="measures" onchange="changeMeasures(this)" />
+            </label>
+            <label id="measures_per_bar_label">
+                Measures per Bar
+                <select id="measures_per_bar" onchange="changeMeasuresPerBar(this)">
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                </select>
+            </label>
+            <label id="beats_per_measure_label">
+                Beats per Measure
+                <select id="beats_per_measure" onchange="changeBeatsPerMeasure(this)">
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                </select>
+            </label>
+        </div>
         <div onClick="play()" id="play_image"></div>
-        <div onClick="pausePlayback()" id="pause_image"></div>
-        <div onClick="stopPlayback()" id="stop_image"></div>
-        <div onClick="toggleReplay()" id="replay_image"></div>
+        <div onClick="stopPlayback()" id="stop_image" class="hide"></div>
+        <div onClick="pausePlayback()" id="pause_image" class="pauseImage hide"></div>
         <div onClick="randomise()" id="randomise_image"></div>
+        <div onClick="toggleReplay()" id="replay_image">Off</div>
+        <div>
+            <button id="start_metronome" onclick="startMetronome()">Start Metronome</button>
+            <button id="stop_metronome" onclick="stopMetronome()">Stop Metronome</button>
+            <label id="metronome_label">
+                BPM:&nbsp;
+                <input id="metronomeBPM"/>
+            </label>
+        </div>
     </div>
 
-    <button id="start_metronome" onclick="startMetronome()">Start Metronome</button>
-    <button id="stop_metronome" onclick="stopMetronome()">Stop Metronome</button>
-    <label id="metronome_label">
-        BPM:&nbsp;
-        <input id="metronomeBPM"/>
-    </label>
+    
 </body>
 <script>
     'use strict'
@@ -564,6 +602,7 @@
         animationStopped = false; 
         fitToScreen();
     })
+    
     var numberOfMeasures = 4
     var numberOfMeasuresPerBar = 2
     var timeSignatureBeats = 4
@@ -592,6 +631,8 @@
     document.getElementById("measures").value = numberOfMeasures
     document.getElementById("measures_per_bar").value = numberOfMeasuresPerBar
     document.getElementById("beats_per_measure").value = timeSignatureBeats
+
+
 
     function changeMeasures(el) {
         if (el.value > 0 && el.value <= 6) {
@@ -763,9 +804,11 @@
     
     function fitToScreen() {
         CANVAS.width = window.innerWidth
-        CANVAS.height = window.innerHeight * 0.5
+        // CANVAS.height = window.innerHeight * 0.5
+        CANVAS.height = topLine * 2 + Math.ceil(numberOfMeasures/numberOfMeasuresPerBar) * 100 + (Math.ceil(numberOfMeasures/numberOfMeasuresPerBar) - 1) * 60
         ANIMATION.width = window.innerWidth
-        ANIMATION.height = window.innerHeight * 0.5
+        // ANIMATION.height = window.innerHeight * 0.5
+        ANIMATION.height = CANVAS.height
         barWidth = window.innerWidth - 2 * startStaffX - initialOffset - bufferToEnd
         unitDistance = barWidth / (numberOfBeatsPerBar)
         drawSheet()
@@ -988,7 +1031,7 @@
         var dir = "FORWARD"
         var start = undefined, pauseTime = 0, elapsed
         var animationPaused = false
-        var animationStopped = false
+        var animationStopped = true
         var replay = false
         let i = 0
 
@@ -999,6 +1042,7 @@
     function loop(timestamp) {
         if (start === undefined) {
             start = timestamp
+            animationStopped = false; 
         }
         if (animationPaused) {
             pauseTime = timestamp - start - elapsed  
@@ -1010,7 +1054,6 @@
             i = 0;
             start = undefined;
             pauseTime = 0;
-            animationStopped = false; 
             ctxAnim.clearRect(0, 0, ANIMATION.width, ANIMATION.height);
             return
         }
@@ -1102,6 +1145,10 @@
         animationPaused = false
         
         document.getElementById("pause").innerText = "Pause"
+        document.getElementById("play_image").classList.add("hide")
+        document.getElementById("randomise_image").classList.add("hide")
+        document.getElementById("stop_image").classList.remove("hide")
+        document.getElementById("pause_image").classList.remove("hide")
 
         window.requestAnimationFrame(loop)
 
@@ -1124,15 +1171,24 @@
     function pausePlayback() {
         if (!SOUND) return
         if (SOUND.state === "running"){
+            document.getElementById("pause_image").classList.remove("pauseImage")
+            document.getElementById("pause_image").classList.add("playImage")
             SOUND.suspend().then(()=>{document.getElementById("pause").innerText = "Unpause"; animationPaused = true})
         }
         else if (SOUND.state === "suspended") {
+            document.getElementById("pause_image").classList.remove("playImage")
+            document.getElementById("pause_image").classList.add("pauseImage")
             SOUND.resume().then(() => {document.getElementById("pause").innerText = "Pause"; animationPaused = false})
         }
         else return
     }
-
+    
     function stopPlayback() {
+        if (animationStopped) return
+        document.getElementById("play_image").classList.remove("hide")
+        document.getElementById("randomise_image").classList.remove("hide")
+        document.getElementById("stop_image").classList.add("hide")
+        document.getElementById("pause_image").classList.add("hide")
         if (SOUND.state === "running") {
             animationStopped = true
             SOUND.close().then(() => {SOUND = new AudioContext()})
@@ -1140,6 +1196,8 @@
         else if (SOUND.state === "suspended") {
             animationPaused = false
             animationStopped = true
+            document.getElementById("pause_image").classList.remove("playImage")
+            document.getElementById("pause_image").classList.add("pauseImage")
             SOUND.close().then(() => {document.getElementById("pause").innerText = "Pause"; SOUND = new AudioContext()})
 
         }
@@ -1148,8 +1206,16 @@
 
     function toggleReplay() {
         replay = !replay
-        if (replay) document.getElementById("replay").innerText = "Replay: On"
-        else if (!replay) document.getElementById("replay").innerText = "Replay: Off"
+        if (replay) {
+            document.getElementById("replay").innerText = "Replay: On"
+            document.getElementById("replay_image").innerText = "On"
+            document.getElementById("replay_image").classList.add("rotate_replay")
+        }
+        else if (!replay) {
+            document.getElementById("replay").innerText = "Replay: Off"
+            document.getElementById("replay_image").innerText = "Off"
+            document.getElementById("replay_image").classList.remove("rotate_replay")
+        }
     }
 
 
