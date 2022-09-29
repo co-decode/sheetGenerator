@@ -88,12 +88,15 @@ DONE Give the metronome a pulse
     DONE Provide a bass frequency based on the key.
     DONE Play with gain changes and/or lesser frequency differences because the octave is a bit hard to hear
 
+FIXED soft sounds for low frequencies. I made a graded check for frequencies and changed gain accordingly.
+DONE Truncate the ending staff when the notes don't reach the final measure allotment
+    DONE Draw an end glyph at the end of the generation.
+
 
 Playing chords
 Scale Selection
     Minor Key Object if very different... any better way to deal with this other than expanding edge cases?
 
-Truncate the ending staff when the notes don't reach the final measure allotment
 
 I need to work on the under and over note lines: C2 up to C6.
     - Is it possible to find a general solution?

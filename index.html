@@ -1067,6 +1067,7 @@
             keySignatures(...keyObject[key], index)                                                 // Key Signatures
 
 
+            const measuresWithNotesLeft = numberOfMeasures - index * numberOfMeasuresPerBar
             
             Array(numberOfMeasuresPerBar).fill(null).forEach((nothing, measureIndex) => {           // Measure bars
                 if (!measureIndex) return
@@ -1076,26 +1077,44 @@
                     topLine + distanceBetweenStaves * index, 
                     1.5, 100)}
 
-                const measuresWithNotesLeft = numberOfMeasures - index * numberOfMeasuresPerBar
 
-                if (measuresWithNotesLeft >= numberOfMeasuresPerBar) {               // Draw measure line before next note, otherwise draw it at the end of the previous note.
-                    drawLine(8)                                                     // !! I might need to truncate the staff here, it looks a little empty
+                if (measuresWithNotesLeft >= numberOfMeasuresPerBar || (measuresWithNotesLeft < numberOfMeasuresPerBar && measureIndex < measuresWithNotesLeft)) {               // Draw measure line before next note, otherwise draw no line.
+                    drawLine(8)                                                    
                 }
-                else if (measuresWithNotesLeft < numberOfMeasuresPerBar && measureIndex >= measuresWithNotesLeft) {
-                    drawLine(-bufferToEnd)
-                } 
+                // else if (measuresWithNotesLeft < numberOfMeasuresPerBar && measureIndex >= measuresWithNotesLeft) {
+                //     drawLine(-bufferToEnd)
+                // } 
             })
-
+            
             Array(2).fill(null).forEach((v, ind) => {                                   // Treble and Bass staves
                 ctx.fillRect(startStaffX + 10,topLine + 50 + distanceBetweenStaves*index,30,1) // C4 bar
                 
                 ctx.fillRect(startStaffX,topLine + distanceBetweenStaves * index,2,100)        // Start Staff
-                ctx.fillRect(width - startStaffX,topLine + distanceBetweenStaves * index,2,101)  // End staff
-
                 
+                if (measuresWithNotesLeft > numberOfMeasuresPerBar) {               
+                    ctx.fillRect(width - startStaffX,topLine + distanceBetweenStaves * index,2,101)     // End staff
+                    Array(5).fill(null).forEach( (v,i) =>                                               // Staff lines
+                        ctx.fillRect(startStaffX, (topLine) + 10 * i + 60 * ind + distanceBetweenStaves * index, width - 2 * startStaffX, 1) )
+                        
+                    }
+                else if (measuresWithNotesLeft <= numberOfMeasuresPerBar) {          // If on the final line and measures don't fill the full width, truncate the bar length
+                    ctx.fillRect(
+                        width - 3 - startStaffX - barWidth / (numberOfBeatsPerBar / timeSignatureBeats) * (numberOfMeasuresPerBar - measuresWithNotesLeft),
+                        topLine + distanceBetweenStaves * index,
+                        5,101)                                                              // End staff
+                    ctx.fillRect(
+                        width - 7 - startStaffX - barWidth / (numberOfBeatsPerBar / timeSignatureBeats) * (numberOfMeasuresPerBar - measuresWithNotesLeft),
+                        topLine + distanceBetweenStaves * index,
+                        1,101)                                                              // End staff
+                    Array(5).fill(null).forEach( (v,i) =>                                   // Staff lines
+                        ctx.fillRect(
+                            startStaffX, 
+                            topLine + 10 * i + 60 * ind + distanceBetweenStaves * index,
+                            width - 2 * startStaffX - barWidth / (numberOfBeatsPerBar / timeSignatureBeats) * (numberOfMeasuresPerBar - measuresWithNotesLeft),
+                            1) 
+                    )
+                } 
 
-                Array(5).fill(null).forEach( (v,i) =>                                   // Staff lines
-                    ctx.fillRect(startStaffX, (topLine) + 10 * i + 60 * ind + distanceBetweenStaves * index, width - 2 * startStaffX, 1) )
             })  
             
         })
@@ -1183,6 +1202,10 @@
             i = 0
             start = undefined
             if (replay) return play();
+            document.getElementById("play_image").classList.remove("hide")
+            document.getElementById("randomise_image").classList.remove("hide")
+            document.getElementById("stop_image").classList.add("hide")
+            document.getElementById("pause_image").classList.add("hide")
             SOUND.close().then(()=> SOUND = new AudioContext())
             return
         } 
@@ -1205,10 +1228,15 @@
         const osc =  SOUND.createOscillator()
         const gainNode = SOUND.createGain()
         osc.connect(gainNode)
+        let gainMultiplier = 1
+        if (frequency < 70) gainMultiplier = 2.5
+        else if (frequency < 100) gainMultiplier = 2
+        else if (frequency < 200) gainMultiplier = 1.5 
         gainNode.connect(SOUND.destination)
-        gainNode.gain.exponentialRampToValueAtTime(0.1, SOUND.currentTime + time )
-        gainNode.gain.linearRampToValueAtTime(0.00001, SOUND.currentTime + noteDuration + time)
-        gainNode.gain.linearRampToValueAtTime(0, SOUND.currentTime + time + noteDuration + 0.1)
+        gainNode.gain.exponentialRampToValueAtTime(0.1 * gainMultiplier, SOUND.currentTime + time )
+        // gainNode.gain.linearRampToValueAtTime(0.00001, SOUND.currentTime + noteDuration + time)
+        gainNode.gain.linearRampToValueAtTime(0, SOUND.currentTime + noteDuration + time)
+        // gainNode.gain.linearRampToValueAtTime(0, SOUND.currentTime + time + noteDuration + 0.1)
         osc.type = 'triangle'
         osc.frequency.value = frequency
         osc.start(SOUND.currentTime + time)
