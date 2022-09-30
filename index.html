@@ -140,6 +140,9 @@
     .stopImage {
         background-image: url("/images/stop.svg")
     }
+    .closeImage {
+        background-image: url("/images/close.svg")
+    }
 
     #metronome_container {
         text-align: center;
@@ -286,8 +289,69 @@
                 <option>4</option>
             </select>
         </label>
+        <label>Root Octave Treble
+            <select id="change_root_octave_treble" onchange="changeRootOctaveTreble(this)">
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
+        </label>
+        <label>Root Octave Bass
+            <select id="change_root_octave_bass" onchange="changeRootOctaveBass(this)">
+                <!-- <option>1</option> -->
+                <option>2</option>
+                <option>3</option>
+            </select>
+        </label>
+        <label>Key Mode
+            <select id="change_scale_mode" onchange="changeKeyMode(this)">
+                <option>Major</option>
+                <option>Minor</option>
+            </select>
+        </label>
+        <label>Scale Treble</label>
+            <select id="change_scale_treble" onchange="changeScaleTreble(this)">
+                <optgroup label="Major Scales">
+                    <option value="majorHeptatonic">M Heptatonic</option>
+                    <option value="majorPentatonic">M Pentatonic</option>
+                    <option value="majorTritonic">M Tritonic</option>
+                </optgroup>
+                <optgroup label="Minor Scales"> 
+                    <option value="minorHeptatonic">m Heptatonic</option>
+                    <option value="minorPentatonic">m Pentatonic</option>
+                    <option value="minorTritonic">m Tritonic</option>
+                </optgroup>
+            </select>
+        <label>Scale Bass
+            <select id="change_scale_bass" onchange="changeScaleBass(this)">
+                <optgroup label="Major Scales">
+                    <option value="majorHeptatonic">M Heptatonic</option>
+                    <option value="majorPentatonic">M Pentatonic</option>
+                    <option value="majorTritonic">M Tritonic</option>
+                </optgroup>
+                <optgroup label="Minor Scales"> 
+                    <option value="minorHeptatonic">m Heptatonic</option>
+                    <option value="minorPentatonic">m Pentatonic</option>
+                    <option value="minorTritonic">m Tritonic</option>
+                </optgroup>
+            </select>
+        </label>
+        <div>Possible Note Durations Treble
+            <label>Half <input id="treble_durations_half" type="checkbox" onchange="changeTrebleDurations()"></label>
+            <label>Quarter <input id="treble_durations_quarter" type="checkbox" onchange="changeTrebleDurations()"></label>
+            <label>Eighth <input id="treble_durations_eighth" type="checkbox" onchange="changeTrebleDurations()"></label>
+            <label>Sixteenth <input id="treble_durations_sixteenth" type="checkbox" onchange="changeTrebleDurations()"></label>
+        </div>
+        <div>Possible Note Durations Bass
+            <label>Half <input id="bass_durations_half" type="checkbox" onchange="changeBassDurations()"></label>
+            <label>Quarter <input id="bass_durations_quarter" type="checkbox" onchange="changeBassDurations()"></label>
+            <label>Eighth <input id="bass_durations_eighth" type="checkbox" onchange="changeBassDurations()"></label>
+            <label>Sixteenth <input id="bass_durations_sixteenth" type="checkbox" onchange="changeBassDurations()"></label>
+        </div>
+        <label>Possible Note Durations Bass</label>
     </div>
     <div class="invisible">
+        <div class="closeImage"></div>
         <div class="stopImage"></div>
         <div class="pauseImage"></div>
     </div>
@@ -296,6 +360,20 @@
 </body>
 <script>
     'use strict'
+    var trebleDurationsSixteenth = document.getElementById("treble_durations_sixteenth")
+    var trebleDurationsEighth = document.getElementById("treble_durations_eighth")
+    var trebleDurationsQuarter = document.getElementById("treble_durations_quarter")
+    var trebleDurationsHalf = document.getElementById("treble_durations_half")
+    var bassDurationsSixteenth = document.getElementById("bass_durations_sixteenth")
+    var bassDurationsEighth = document.getElementById("bass_durations_eighth")
+    var bassDurationsQuarter = document.getElementById("bass_durations_quarter")
+    var bassDurationsHalf = document.getElementById("bass_durations_half")
+
+    var changeScaleMode = document.getElementById("change_scale_mode")
+
+    var keyChanger = document.getElementById("keyChanger")
+
+
     var bpmInput = document.getElementById('bpmInput')
     var CANVAS = document.getElementById('sheet-music')
     var ANIMATION = document.getElementById('animation')
@@ -615,46 +693,97 @@
         "-24":["B8","Bb8"]
     }
     
-    const keyObject = {
-        C: [null, 0],
-        G: ['SHARP', 1],
-        D: ['SHARP', 2],
-        A: ['SHARP', 3],
-        E: ['SHARP', 4],
-        B: ['SHARP', 5],
-        F: ['FLAT', 1],
-        "A#/Bb": ['FLAT', 2],
-        "D#/Eb": ['FLAT', 3],
-        "G#/Ab": ['FLAT', 4],
-        Db: ['FLAT', 5],
-        "F#": ['SHARP', 6],
-        Gb: ['FLAT', 6],
-        "C#": ['SHARP', 7],
-        Cb: ['FLAT', 7],
+    
+    const keyModes = {
+        major: {
+            C: [null, 0],
+            G: ['SHARP', 1],
+            D: ['SHARP', 2],
+            A: ['SHARP', 3],
+            E: ['SHARP', 4],
+            B: ['SHARP', 5],
+            F: ['FLAT', 1],
+            "A#/Bb": ['FLAT', 2],
+            "D#/Eb": ['FLAT', 3],
+            "G#/Ab": ['FLAT', 4],
+            Db: ['FLAT', 5],
+            "F#": ['SHARP', 6],
+            Gb: ['FLAT', 6],
+            "C#": ['SHARP', 7],
+            Cb: ['FLAT', 7]
+        },
+        minor: {
+            A: [null, 0],
+            E: ['SHARP', 1],
+            B: ['SHARP', 2],
+            "F#/Gb": ['SHARP', 3],
+            "C#/Db": ['SHARP', 4],
+            "G#/Ab": ['SHARP', 5],
+            D: ['FLAT', 1],
+            G: ['FLAT', 2],
+            C: ['FLAT', 3],
+            F: ['FLAT', 4],
+            Bb: ['FLAT', 5],
+            "D#": ['SHARP', 6],
+            Eb: ['FLAT', 6],
+            "A#": ['SHARP', 7],
+            Ab: ['FLAT', 7],
+        }
     }
-    /* const minorKeyObject = {
-        A: [null, 0],
-        E: ['SHARP', 1],
-        B: ['SHARP', 2],
-        "F#/Gb": ['SHARP', 3],
-        "C#/Db": ['SHARP', 4],
-        "G#/Ab": ['SHARP', 5],
-        D: ['FLAT', 1],
-        G: ['FLAT', 2],
-        C: ['FLAT', 3],
-        F: ['FLAT', 4],
-        Bb: ['FLAT', 5],
-        "D#": ['SHARP', 6],
-        Eb: ['FLAT', 6],
-        "A#": ['SHARP', 7],
-        Ab: ['FLAT', 7],
-    } */
+    // const majorKeyObject = {
+    //     C: [null, 0],
+    //     G: ['SHARP', 1],
+    //     D: ['SHARP', 2],
+    //     A: ['SHARP', 3],
+    //     E: ['SHARP', 4],
+    //     B: ['SHARP', 5],
+    //     F: ['FLAT', 1],
+    //     "A#/Bb": ['FLAT', 2],
+    //     "D#/Eb": ['FLAT', 3],
+    //     "G#/Ab": ['FLAT', 4],
+    //     Db: ['FLAT', 5],
+    //     "F#": ['SHARP', 6],
+    //     Gb: ['FLAT', 6],
+    //     "C#": ['SHARP', 7],
+    //     Cb: ['FLAT', 7],
+    // }
+    // const minorKeyObject = {
+    //     A: [null, 0],
+    //     E: ['SHARP', 1],
+    //     B: ['SHARP', 2],
+    //     "F#/Gb": ['SHARP', 3],
+    //     "C#/Db": ['SHARP', 4],
+    //     "G#/Ab": ['SHARP', 5],
+    //     D: ['FLAT', 1],
+    //     G: ['FLAT', 2],
+    //     C: ['FLAT', 3],
+    //     F: ['FLAT', 4],
+    //     Bb: ['FLAT', 5],
+    //     "D#": ['SHARP', 6],
+    //     Eb: ['FLAT', 6],
+    //     "A#": ['SHARP', 7],
+    //     Ab: ['FLAT', 7],
+    // }
 
-    const majorHeptatonic = [0, 2, 4, 5, 7, 9, 11, 12]
-    const majorPentatonic = [0, 2, 4, 7, 9, 12]
-    const majorTritonic = [0, 4, 7,12]
+    var keyObject = keyModes.major
 
-    const harmonicHeptatonic = [0, 2, 3, 5, 7, 8, 11, 12] // I'll need to add to the key Object, or else figure out the relative minors.
+
+    const scaleObject = {
+        majorHeptatonic: [0, 2, 4, 5, 7, 9, 11, 12],
+        majorPentatonic: [0, 2, 4, 7, 9, 12],
+        majorTritonic: [0, 4, 7, 12],
+        harmonicHeptatonic: [0, 2, 3, 5, 7, 8, 11, 12],
+        minorHeptatonic: [0, 2, 3, 5, 7, 8, 10, 12],
+        minorPentatonic: [0, 3, 5, 7, 10, 12],
+        minorTritonic: [0, 3, 7, 12]
+    }
+
+    // const majorHeptatonic = [0, 2, 4, 5, 7, 9, 11, 12]
+    // const majorPentatonic = [0, 2, 4, 7, 9, 12]
+    // const majorTritonic = [0, 4, 7,12]
+
+    const harmonicHeptatonic = [0, 2, 3, 5, 7, 8, 11, 12] 
+    // I'll need to add to the key Object, or else figure out the relative minors.
     const minorHeptatonic = [0, 2, 3, 5, 7, 8, 10, 12]
     const minorPentatonic = [0, 3, 5, 7, 10, 12]
     const minorTritonic = [0, 3, 7, 12]
@@ -668,7 +797,7 @@
         bpm = parseInt(e.target.value); 
         bpmInput.placeholder = bpm
         secondsPerBeat = 60 / bpm; 
-        unitDistance = barWidth / (numberOfBeatsPerBar); 
+        unitDistance = barWidth / numberOfBeatsPerBar 
         stopPlayback(); 
         animationStopped = false; 
         fitToScreen();
@@ -686,9 +815,27 @@
     var initialOffset = 90 + keyObject[key][1] * 10
     var bufferToEnd = 4
     var barWidth = (window.innerWidth - 2 * startStaffX - initialOffset - bufferToEnd)
-    var unitDistance = barWidth / (numberOfBeatsPerBar)
+    var unitDistance = barWidth / numberOfBeatsPerBar
     // p / bar  /  beat / bar = pixels / beat
 
+
+    var rootOctaveTreble = 4
+    var rootOctaveBass = 2
+
+    var scaleTypeTreble = scaleObject.majorHeptatonic
+    var scaleTypeBass = scaleObject.majorTritonic
+
+    var builtScaleTreble 
+    var builtScaleBass
+
+    var durations = [
+        0.25, 0.5, 1, 2
+    ]
+
+    var trebleDurations = durations.slice(1)
+
+    var bassDurations = durations.slice(2)
+    
     
 
     function changeKey(el) {
@@ -697,11 +844,41 @@
         buildScale()
         randomise()
     }
-
-    document.getElementById("keyChanger").value = key
+    keyChanger.value = key
     document.getElementById("measures").value = numberOfMeasures
     document.getElementById("measures_per_bar").value = numberOfMeasuresPerBar
     document.getElementById("beats_per_measure").value = timeSignatureBeats
+    document.getElementById("change_root_octave_treble").value = rootOctaveTreble
+    document.getElementById("change_root_octave_bass").value = rootOctaveBass
+    document.getElementById("change_scale_treble").value = Object.keys(scaleObject).find(key =>scaleObject[key] === scaleTypeTreble)
+    document.getElementById("change_scale_bass").value = Object.keys(scaleObject).find(key =>scaleObject[key] === scaleTypeBass)
+
+    changeScaleMode.value = "Major"
+
+    const trebleDurationInclusionArray = [
+            trebleDurationsSixteenth,
+            trebleDurationsEighth,
+            trebleDurationsQuarter,
+            trebleDurationsHalf
+        ]
+    const bassDurationInclusionArray = [
+        bassDurationsSixteenth,
+        bassDurationsEighth,
+        bassDurationsQuarter,
+        bassDurationsHalf
+    ]
+    durations.forEach((duration, index) => {
+        trebleDurations.includes(duration) ? trebleDurationInclusionArray[index].checked = true : trebleDurationInclusionArray[index].checked = false
+        bassDurations.includes(duration) ? bassDurationInclusionArray[index].checked = true : bassDurationInclusionArray[index].checked = false
+    })
+    // trebleDurationsSixteenth.checked = true
+    // trebleDurationsEighth.checked = true
+    // trebleDurationsQuarter.checked = true
+    // trebleDurationsHalf.checked = true
+    // bassDurationsSixteenth.checked = true
+    // bassDurationsEighth.checked = true
+    // bassDurationsQuarter.checked = true
+    // bassDurationsHalf.checked = true
 
     function toggleOptionsMenu() {
         document.getElementById("options_menu").classList.toggle("options_menu_display")
@@ -724,22 +901,101 @@
         numberOfBeatsPerBar = numberOfMeasuresPerBar * timeSignatureBeats
         randomise()
     }
+    function changeRootOctaveTreble(el) {
+        rootOctaveTreble = parseInt(el.value)
+        buildScale()
+        randomise()
+    }
+    function changeRootOctaveBass(el) {
+        rootOctaveBass = parseInt(el.value)
+        buildScale()
+        randomise()
+    }
+    function changeKeyMode(el) {
+        const mode = el.value.toLowerCase()
+        key = Object.keys(keyModes[mode])[Object.keys(keyObject).findIndex(val => val === key)]
+        keyObject = keyModes[mode]
+        keyChanger.innerHTML = mode === "minor" 
+        ? `
+        <option>A</option>
+        <option>E</option>
+        <option>B</option>
+        <option>F#/Gb</option>
+        <option>C#/Db</option>
+        <option>G#/Ab</option>
+        <option>D</option>
+        <option>G</option>
+        <option>C</option>
+        <option>F</option>
+        <option>Bb</option>
+        <option>D#</option>
+        <option>Eb</option>
+        <option>A#</option>
+        <option>Ab</option>
+        `
+        : `
+        <option>C</option>
+        <option>G</option>
+        <option>D</option>
+        <option>A</option>
+        <option>E</option>
+        <option>B</option>
+        <option>F</option>
+        <option>A#/Bb</option>
+        <option>D#/Eb</option>
+        <option>G#/Ab</option>
+        <option>Db</option>
+        <option>F#</option>
+        <option>Gb</option>
+        <option>C#</option>
+        <option>Cb</option>
+        `
+        keyChanger.value = key
+        scaleTypeTreble = scaleObject.minorHeptatonic
+        scaleTypeBass = scaleObject.minorTritonic
+        buildScale()
+        console.log(builtScaleTreble)
+        randomise()
+    }
+    function changeScaleTreble(el) {
+        scaleTypeTreble = scaleObject[el.value].slice(0, scaleObject[el.value].length )
+        buildScale()
+        randomise()
+    }
+    function changeScaleBass(el) {
+        scaleTypeBass = scaleObject[el.value].slice(0, scaleObject[el.value].length )
+        buildScale()
+        randomise()
+    }
+    function changeTrebleDurations() {
+        const inclusionArray = [
+            trebleDurationsSixteenth.checked,
+            trebleDurationsEighth.checked,
+            trebleDurationsQuarter.checked,
+            trebleDurationsHalf.checked
+        ]        
+        if (inclusionArray.every(val=> !val)) return
+        trebleDurations = durations.filter((val, index) => inclusionArray[index])
+        buildScale()
+        randomise()
+    }
+    function changeBassDurations() {
+        const inclusionArray = [
+            bassDurationsSixteenth.checked,
+            bassDurationsEighth.checked,
+            bassDurationsQuarter.checked,
+            bassDurationsHalf.checked
+        ]
+        if (inclusionArray.every(val=> !val)) return
+        bassDurations = durations.filter((val, index) => inclusionArray[index])
+        buildScale()
+        randomise()
+    }
 
 
 
-    var rootOctaveTreble = 4
-    var rootOctaveBass = 2
-
-    var scaleTypeTreble = majorHeptatonic
-    var scaleTypeBass = majorTritonic
-
-    var builtScaleTreble 
-    var builtScaleBass
     
     function buildScale() {
-
-
-
         let initialNoteTreble = key + rootOctaveTreble
         let initialNoteBass = key + rootOctaveBass
         
@@ -772,22 +1028,6 @@
     }
 
     buildScale()
-
-
-    
-
-    var durations = [
-        /* 0.25,  */0.5, 1, 2
-    ]
-
-    var bassDurations = [
-        1,2
-    ]
-
-
-
-    
-
 
     function keySignatures(sharpOrFlat, noOfGlyphs, index) {
         var keySignatureOffset = 70
@@ -829,8 +1069,11 @@
         SOUND = new AudioContext()
 
         let currentDistance = 0
-        let index = 0
+        let trebleIndex = 0
+        let originalTrebleDurations = trebleDurations
+        let originalBassDurations = bassDurations
         let bassIndex = 0
+
         Object.keys(trebleObject).forEach(noteNumber => delete trebleObject[noteNumber])
         Object.keys(bassObject).forEach(noteNumber => delete bassObject[noteNumber])
         
@@ -852,26 +1095,26 @@
             bassIndex++
         }
         currentDistance = 0
-        bassDurations = [1,2]
+        bassDurations = originalBassDurations
         while (currentDistance < timeSignatureBeats) {
-            const noteLengthUnit = durations[Math.floor(Math.random()*durations.length)]
+            const noteLengthUnit = trebleDurations[Math.floor(Math.random()*trebleDurations.length)]
 
 
     
-            trebleObject[index] = {
+            trebleObject[trebleIndex] = {
                 duration: noteLengthUnit, 
                 name: builtScaleTreble[Math.floor(Math.random() * builtScaleTreble.length)]
             }
 
             currentDistance += noteLengthUnit       
             const distanceLeft = timeSignatureBeats - currentDistance
-            if (durations.at(-1) > distanceLeft){              // Cut out notes which would exceed bar length
-                durations = durations.filter(dur => dur <= distanceLeft)
+            if (trebleDurations.at(-1) > distanceLeft){              // Cut out notes which would exceed bar length
+                trebleDurations = trebleDurations.filter(dur => dur <= distanceLeft)
             }
-            index++
+            trebleIndex++
         }
         currentDistance = 0
-        durations = [/* 0.25, */ 0.5, 1, 2]
+        trebleDurations = originalTrebleDurations
         })
         var totalSongDistance = Object.values(trebleObject).reduce((a,obj) => a + obj.duration * unitDistance, 0)
 
@@ -890,7 +1133,7 @@
         // ANIMATION.height = window.innerHeight * 0.5
         ANIMATION.height = CANVAS.height
         barWidth = window.innerWidth - 2 * startStaffX - initialOffset - bufferToEnd
-        unitDistance = barWidth / (numberOfBeatsPerBar)
+        unitDistance = barWidth / numberOfBeatsPerBar
         drawSheet()
     }
    
@@ -913,8 +1156,8 @@
         
         var halfToneDistance = 5
         var songDistance = 0        // The number of pixels from the start to the current note
-        var totalSongDistance = Object.values(trebleObject).reduce((a,obj) =>
-            a + obj.duration * unitDistance, 0)
+        var totalSongDistance = parseInt(Object.values(trebleObject).reduce((a,obj) =>
+            a + obj.duration * unitDistance, 0))
         var numberOfStaves = Math.ceil(totalSongDistance/barWidth)
 
         function drawNotes(songObject, trebleOrBass) {
@@ -966,42 +1209,44 @@
                 .find(offsetKey => offsetMap[offsetKey]
                     .some(noteName=> new RegExp(noteName)
                         .test(noteKeyed)))
-
             
+            const songDistanceEffective = Math.ceil(songDistance) / barWidth === Math.ceil(songDistance / barWidth) ? Math.ceil(songDistance) : songDistance
+
+
             ctx.fillText(noteHead[noteDuration],// Draw note head
-                startStaffX + initialOffset + songDistance % barWidth, 
-                topLine + 0.5 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth))
+                startStaffX + initialOffset + songDistanceEffective % barWidth, 
+                topLine + 0.5 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistanceEffective / barWidth))
             if (noteDuration <= 2) {            // Draw note bars and tails
                 if ((trebleOrBass === 'TREBLE' && offset > 4) || (trebleOrBass === 'BASS' && offset > 16)) {               // Note tails that point up
                     ctx.fillRect(
-                        startStaffX + initialOffset + songDistance % barWidth + 10,
-                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                        startStaffX + initialOffset + songDistanceEffective % barWidth + 10,
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistanceEffective / barWidth),
                         2,
                         -30)
                     if (noteDuration === 0.5) {
                         ctx.fillText('\ue240', 
-                        startStaffX + initialOffset + songDistance % barWidth + 10, 
-                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) - 35)
+                        startStaffX + initialOffset + songDistanceEffective % barWidth + 10, 
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistanceEffective / barWidth) - 35)
                     }
                     else if (noteDuration === 0.25) {
                         ctx.fillText('\ue242', 
-                        startStaffX + initialOffset + songDistance % barWidth + 10, 
-                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) - 35)
+                        startStaffX + initialOffset + songDistanceEffective % barWidth + 10, 
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistanceEffective / barWidth) - 35)
                     }
                 }
                 else {
                     ctx.fillRect(               // Note tails that point down
-                        startStaffX + initialOffset + songDistance % barWidth,
-                        topLine + 0.5 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                        startStaffX + initialOffset + songDistanceEffective % barWidth,
+                        topLine + 0.5 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistanceEffective / barWidth),
                         2,
                         30)
                     if (noteDuration === 0.5) {
-                        ctx.fillText('\ue241', startStaffX + initialOffset + songDistance % barWidth,
-                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) + 35)
+                        ctx.fillText('\ue241', startStaffX + initialOffset + songDistanceEffective % barWidth,
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistanceEffective / barWidth) + 35)
                     }
                     else if (noteDuration === 0.25) {
-                        ctx.fillText('\ue243', startStaffX + initialOffset + songDistance % barWidth,
-                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistance / barWidth) + 35)
+                        ctx.fillText('\ue243', startStaffX + initialOffset + songDistanceEffective % barWidth,
+                        topLine - 1 + halfToneDistance * offset + distanceBetweenStaves * Math.floor(songDistanceEffective / barWidth) + 35)
                     }
                 }
             }
@@ -1013,36 +1258,36 @@
 
             if (noteKeyed === "C4" || noteKeyed === "C#4" || noteKeyed === "Cb4") {            // C4 bar
                 ctx.fillRect(
-                    startStaffX + initialOffset + songDistance % barWidth - 0.3 * 30, 
-                    topLine + halfToneDistance * findOffset("C4") + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                    startStaffX + initialOffset + songDistanceEffective % barWidth - 0.3 * 30, 
+                    topLine + halfToneDistance * findOffset("C4") + distanceBetweenStaves * Math.floor(songDistanceEffective / barWidth),
                     30,
                     1)      
                 }
 
             else if (findOffset(noteKeyed) < findOffset("G5")) {
                 ctx.fillRect(
-                    startStaffX + initialOffset + songDistance % barWidth - 0.3 * 30, 
-                    topLine + halfToneDistance * findOffset("A5") + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                    startStaffX + initialOffset + songDistanceEffective % barWidth - 0.3 * 30, 
+                    topLine + halfToneDistance * findOffset("A5") + distanceBetweenStaves * Math.floor(songDistanceEffective / barWidth),
                     30,
                     1)
                 if (findOffset(noteKeyed) < findOffset("B5")) {
                     ctx.fillRect(
-                        startStaffX + initialOffset + songDistance % barWidth - 0.3 * 30, 
-                        topLine + halfToneDistance * findOffset("C6") + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                        startStaffX + initialOffset + songDistanceEffective % barWidth - 0.3 * 30, 
+                        topLine + halfToneDistance * findOffset("C6") + distanceBetweenStaves * Math.floor(songDistanceEffective / barWidth),
                         30,
                         1)
                 }
             }
             else if (findOffset(noteKeyed) > findOffset("F2")) {
                 ctx.fillRect(
-                    startStaffX + initialOffset + songDistance % barWidth - 0.3 * 30, 
-                    topLine + halfToneDistance * findOffset("E2") + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                    startStaffX + initialOffset + songDistanceEffective % barWidth - 0.3 * 30, 
+                    topLine + halfToneDistance * findOffset("E2") + distanceBetweenStaves * Math.floor(songDistanceEffective / barWidth),
                     30,
                     1)
                 if (findOffset(noteKeyed) > findOffset("D2")) {
                     ctx.fillRect(
-                        startStaffX + initialOffset + songDistance % barWidth - 0.3 * 30, 
-                        topLine + halfToneDistance * findOffset("C2") + distanceBetweenStaves * Math.floor(songDistance / barWidth),
+                        startStaffX + initialOffset + songDistanceEffective % barWidth - 0.3 * 30, 
+                        topLine + halfToneDistance * findOffset("C2") + distanceBetweenStaves * Math.floor(songDistanceEffective / barWidth),
                         30,
                         1)
                 }
@@ -1058,6 +1303,7 @@
         drawNotes(bassObject, 'BASS')
         
         Array(numberOfStaves).fill(null).forEach((v, index) => {                                    // Number of grand staves
+            // console.log(numberOfStaves)
             ctx.font = `100px bravura`
             ctx.fillText("\uE000", 25, topLine + 100 + distanceBetweenStaves * index)               // Staff Bracket
             ctx.font = "40px bravura"
@@ -1073,7 +1319,7 @@
                 if (!measureIndex) return
 
                 function drawLine(offset) {ctx.fillRect(
-                    barWidth / (numberOfBeatsPerBar / timeSignatureBeats) * measureIndex + startStaffX + initialOffset - offset, 
+                    barWidth / (numberOfMeasuresPerBar) * measureIndex + startStaffX + initialOffset - offset, 
                     topLine + distanceBetweenStaves * index, 
                     1.5, 100)}
 
@@ -1099,18 +1345,18 @@
                     }
                 else if (measuresWithNotesLeft <= numberOfMeasuresPerBar) {          // If on the final line and measures don't fill the full width, truncate the bar length
                     ctx.fillRect(
-                        width - 3 - startStaffX - barWidth / (numberOfBeatsPerBar / timeSignatureBeats) * (numberOfMeasuresPerBar - measuresWithNotesLeft),
+                        width - 3 - startStaffX - barWidth / (numberOfMeasuresPerBar) * (numberOfMeasuresPerBar - measuresWithNotesLeft),
                         topLine + distanceBetweenStaves * index,
                         5,101)                                                              // End staff
                     ctx.fillRect(
-                        width - 7 - startStaffX - barWidth / (numberOfBeatsPerBar / timeSignatureBeats) * (numberOfMeasuresPerBar - measuresWithNotesLeft),
+                        width - 7 - startStaffX - barWidth / (numberOfMeasuresPerBar) * (numberOfMeasuresPerBar - measuresWithNotesLeft),
                         topLine + distanceBetweenStaves * index,
                         1,101)                                                              // End staff
                     Array(5).fill(null).forEach( (v,i) =>                                   // Staff lines
                         ctx.fillRect(
                             startStaffX, 
                             topLine + 10 * i + 60 * ind + distanceBetweenStaves * index,
-                            width - 2 * startStaffX - barWidth / (numberOfBeatsPerBar / timeSignatureBeats) * (numberOfMeasuresPerBar - measuresWithNotesLeft),
+                            width - 2 * startStaffX - barWidth / (numberOfMeasuresPerBar) * (numberOfMeasuresPerBar - measuresWithNotesLeft),
                             1) 
                     )
                 } 
@@ -1229,7 +1475,8 @@
         const gainNode = SOUND.createGain()
         osc.connect(gainNode)
         let gainMultiplier = 1
-        if (frequency < 70) gainMultiplier = 2.5
+        if (frequency >= 200) gainMultiplier = 1
+        else if (frequency < 70) gainMultiplier = 2.5
         else if (frequency < 100) gainMultiplier = 2
         else if (frequency < 200) gainMultiplier = 1.5 
         gainNode.connect(SOUND.destination)

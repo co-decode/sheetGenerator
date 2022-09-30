@@ -92,6 +92,8 @@ FIXED soft sounds for low frequencies. I made a graded check for frequencies and
 DONE Truncate the ending staff when the notes don't reach the final measure allotment
     DONE Draw an end glyph at the end of the generation.
 
+FIXED number inaccuracies determining note positions for 3 beats per measure.
+
 
 Playing chords
 Scale Selection
