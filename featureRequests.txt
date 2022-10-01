@@ -93,18 +93,19 @@ DONE Truncate the ending staff when the notes don't reach the final measure allo
     DONE Draw an end glyph at the end of the generation.
 
 FIXED number inaccuracies determining note positions for 3 beats per measure.
-
-
-Scale Selection
-    Need to auto change scales to minor versions on mode change
+DONE Scale Selection
+    DONE Need to auto change scales to minor versions on mode change
     FIXED Minor Key Object if very different... any better way to deal with this other than expanding edge cases?
-Clean UI
+
+Good enough - Clean UI
 
 
 Playing chords
 
 I need to work on the under and over note lines: C2 up to C6.
     - Is it possible to find a general solution?
+
 LATER: 
+Scale Slices, eventually Note selection, could get rid of Scale selection, but that's probably still a good feature.
 Playing chunks, such as arpeggios.
 
