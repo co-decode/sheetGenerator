@@ -345,6 +345,9 @@
                     <option value="majorTritonic">Tritonic</option>
             </select>
         </label>
+        <label>Chords
+            <input id="toggle_chords" type="checkbox" onchange="toggleChords(this)" />
+        </label>
         </div>
         <div class="bottom_options">
         <div class="note_durations">
@@ -387,6 +390,9 @@
     var changeScaleTreble = document.getElementById("change_scale_treble")
     var changeScaleBass = document.getElementById("change_scale_bass")
 
+    var toggle_chords = document.getElementById("toggle_chords")
+    toggle_chords.checked = false
+
     var keyChanger = document.getElementById("keyChanger")
 
 
@@ -404,6 +410,7 @@
 
     const trebleObject = {}
     const bassObject = {}
+    // const secondBassObject = {}
     const songDurations = []
     const songNoteNames = []
 
@@ -746,43 +753,8 @@
             Ab: ['FLAT', 7],
         }
     }
-    // const majorKeyObject = {
-    //     C: [null, 0],
-    //     G: ['SHARP', 1],
-    //     D: ['SHARP', 2],
-    //     A: ['SHARP', 3],
-    //     E: ['SHARP', 4],
-    //     B: ['SHARP', 5],
-    //     F: ['FLAT', 1],
-    //     "A#/Bb": ['FLAT', 2],
-    //     "D#/Eb": ['FLAT', 3],
-    //     "G#/Ab": ['FLAT', 4],
-    //     Db: ['FLAT', 5],
-    //     "F#": ['SHARP', 6],
-    //     Gb: ['FLAT', 6],
-    //     "C#": ['SHARP', 7],
-    //     Cb: ['FLAT', 7],
-    // }
-    // const minorKeyObject = {
-    //     A: [null, 0],
-    //     E: ['SHARP', 1],
-    //     B: ['SHARP', 2],
-    //     "F#/Gb": ['SHARP', 3],
-    //     "C#/Db": ['SHARP', 4],
-    //     "G#/Ab": ['SHARP', 5],
-    //     D: ['FLAT', 1],
-    //     G: ['FLAT', 2],
-    //     C: ['FLAT', 3],
-    //     F: ['FLAT', 4],
-    //     Bb: ['FLAT', 5],
-    //     "D#": ['SHARP', 6],
-    //     Eb: ['FLAT', 6],
-    //     "A#": ['SHARP', 7],
-    //     Ab: ['FLAT', 7],
-    // }
 
     var keyObject = keyModes.major
-
 
     const scaleObject = {
         majorHeptatonic: [0, 2, 4, 5, 7, 9, 11, 12],
@@ -793,16 +765,6 @@
         minorPentatonic: [0, 3, 5, 7, 10, 12],
         minorTritonic: [0, 3, 7, 12]
     }
-
-    // const majorHeptatonic = [0, 2, 4, 5, 7, 9, 11, 12]
-    // const majorPentatonic = [0, 2, 4, 7, 9, 12]
-    // const majorTritonic = [0, 4, 7,12]
-
-    // const harmonicHeptatonic = [0, 2, 3, 5, 7, 8, 11, 12] 
-    // I'll need to add to the key Object, or else figure out the relative minors.
-    // const minorHeptatonic = [0, 2, 3, 5, 7, 8, 10, 12]
-    // const minorPentatonic = [0, 3, 5, 7, 10, 12]
-    // const minorTritonic = [0, 3, 7, 12]
 
     var key = "C"
 
@@ -847,6 +809,8 @@
     var builtScaleTreble 
     var builtScaleBass
 
+    var playChords = false
+
     var durations = [
         0.25, 0.5, 1, 2
     ]
@@ -866,6 +830,7 @@
         buildScale()
         randomise()
     }
+
     keyChanger.value = key
     document.getElementById("measures").value = numberOfMeasures
     document.getElementById("measures_per_bar").value = numberOfMeasuresPerBar
@@ -1007,19 +972,16 @@
     function changeScale() {
         let trebleVal = changeScaleTreble.value
         let bassVal = changeScaleBass.value
-        console.log(trebleVal, bassVal)
         scaleTypeTreble = scaleObject[trebleVal].slice(0, scaleObject[trebleVal].length )
         scaleTypeBass = scaleObject[bassVal].slice(0, scaleObject[bassVal].length )
         buildScale()
         randomise()
     }
-    // function changeScaleTreble(el) {
-    //     scaleTypeTreble = 
-    // }
-    // function changeScaleBass(el) {
-    //     buildScale()
-    //     randomise()
-    // }
+    function toggleChords(el) {
+        playChords = el.checked
+        randomise()
+    }
+
     function changeTrebleDurations() {
         const inclusionArray = [
             trebleDurationsSixteenth.checked,
@@ -1045,9 +1007,14 @@
         randomise()
     }
 
-
-
-    
+    function returnScale(initialNote, scaleType = [0,2,4,5,7,9,11,12,14,16,17,19]) {
+        const notes = Object.keys(frequencyNoteMap440)
+        initialNote = notes.find(name => name.includes(initialNote))
+        const initialIndex = notes.findIndex((val) => val === initialNote)
+        return Array(scaleType.length).fill(null)
+            .map((val, index) => notes[initialIndex + scaleType[index]])
+    }
+        
     function buildScale() {
         let initialNoteTreble = key + rootOctaveTreble
         let initialNoteBass = key + rootOctaveBass
@@ -1055,12 +1022,12 @@
         const notes = Object.keys(frequencyNoteMap440)
 
        
-
+        
         if (["A#/Bb", "D#/Eb", "G#/Ab", "F#/Gb", "C#/Db"].some(name => name === key)) {
             initialNoteTreble = initialNoteTreble.replace("/", `${rootOctaveTreble}/`)
             initialNoteBass = initialNoteBass.replace("/", `${rootOctaveBass}/`)
         }
-
+        
         if (key.includes("b") || key.includes("#")) {
             if (key === "Cb") {
                 initialNoteTreble = notes.find(name => name.includes("B" + (rootOctaveTreble - 1)))
@@ -1129,14 +1096,16 @@
 
         Object.keys(trebleObject).forEach(noteNumber => delete trebleObject[noteNumber])
         Object.keys(bassObject).forEach(noteNumber => delete bassObject[noteNumber])
+        // Object.keys(secondBassObject).forEach(noteNumber => delete bassObject[noteNumber])
         
         Array(numberOfMeasures).fill(null).forEach((nothing, measure) => {                 // Number of Musical Measures
         while (currentDistance < timeSignatureBeats) {
             const bassNLU = bassDurations[Math.floor(Math.random() * bassDurations.length)]
+            const randomlySelectNoteIndex = Math.floor(Math.random() * builtScaleBass.length)
 
             bassObject[bassIndex] = {
                 duration: bassNLU,
-                name: builtScaleBass[Math.floor(Math.random() * builtScaleBass.length)]
+                name: builtScaleBass[randomlySelectNoteIndex]
             }
 
             currentDistance += bassNLU
@@ -1219,7 +1188,6 @@
 
             let noteKeyed
 
-            
             if (obj.name.length === 2) {
                 noteKeyed = obj.name
             }
@@ -1353,10 +1321,20 @@
         })
         songDistance = 0
         }
-
         drawNotes(trebleObject, 'TREBLE')
         drawNotes(bassObject, 'BASS')
-        
+
+        let secondBassObject = {}
+        let thirdBassObject = {}
+        if (playChords && changeScaleBass.value.match("Tritonic")[0]){
+            Object.keys(bassObject).forEach(key => secondBassObject[key] = {...bassObject[key]})
+            Object.keys(bassObject).forEach(key => thirdBassObject[key] = {...bassObject[key]})
+            Object.keys(secondBassObject).forEach((noteNumber) => secondBassObject[noteNumber].name = returnScale(key+rootOctaveBass)[returnScale(key + rootOctaveBass).findIndex(val => val === secondBassObject[noteNumber].name) + 2]  )
+            Object.keys(thirdBassObject).forEach((noteNumber) => thirdBassObject[noteNumber].name = returnScale(key+rootOctaveBass)[returnScale(key + rootOctaveBass).findIndex(val => val === thirdBassObject[noteNumber].name) + 4]  )
+            drawNotes(secondBassObject, 'BASS')
+            drawNotes(thirdBassObject, 'BASS')
+        }
+
         Array(numberOfStaves).fill(null).forEach((v, index) => {                                    // Number of grand staves
             // console.log(numberOfStaves)
             ctx.font = `100px bravura`
@@ -1531,7 +1509,7 @@
         osc.connect(gainNode)
         let gainMultiplier = 1
         if (frequency >= 200) gainMultiplier = 1
-        else if (frequency < 70) gainMultiplier = 2.5
+        // else if (frequency < 70) gainMultiplier = 2.5
         else if (frequency < 100) gainMultiplier = 2
         else if (frequency < 200) gainMultiplier = 1.5 
         gainNode.connect(SOUND.destination)
@@ -1575,6 +1553,10 @@
             const noteDuration = bassObject[ind].duration * secondsPerBeat
             const songElapsed = Object.values(bassObject).slice(0,ind).reduce((acc, obj)=> acc + obj.duration * secondsPerBeat, 0)
             playSound(frequencyNoteMap440[noteName], songElapsed, noteNumber, noteDuration)
+            if (playChords && changeScaleBass.value.match("Tritonic")[0]) {
+                playSound(frequencyNoteMap440[returnScale(key+rootOctaveBass)[returnScale(key + rootOctaveBass).findIndex(val => val === noteName) + 2]], songElapsed, noteNumber, noteDuration)
+                playSound(frequencyNoteMap440[returnScale(key+rootOctaveBass)[returnScale(key + rootOctaveBass).findIndex(val => val === noteName) + 2]], songElapsed, noteNumber, noteDuration)
+            }
         }
     }
 
