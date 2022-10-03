@@ -345,7 +345,7 @@
                     <option value="majorTritonic">Tritonic</option>
             </select>
         </label>
-        <label>Chords
+        <label id="toggle_chords_label">Chords:&nbsp;
             <input id="toggle_chords" type="checkbox" onchange="toggleChords(this)" />
         </label>
         </div>
@@ -391,6 +391,7 @@
     var changeScaleBass = document.getElementById("change_scale_bass")
 
     var toggle_chords = document.getElementById("toggle_chords")
+    var toggle_chords_label = document.getElementById("toggle_chords_label")
     toggle_chords.checked = false
 
     var keyChanger = document.getElementById("keyChanger")
@@ -974,6 +975,12 @@
         let bassVal = changeScaleBass.value
         scaleTypeTreble = scaleObject[trebleVal].slice(0, scaleObject[trebleVal].length )
         scaleTypeBass = scaleObject[bassVal].slice(0, scaleObject[bassVal].length )
+        if (!bassVal.match("Tritonic") ) {
+            toggle_chords_label.classList.add("hide")
+        }
+        else if (bassVal.match("Tritonic")) {
+            toggle_chords_label.classList.remove("hide")
+        }
         buildScale()
         randomise()
     }
