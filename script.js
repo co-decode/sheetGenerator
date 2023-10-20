@@ -789,7 +789,7 @@ function fitToScreen() {
   ANIMATION.height = CANVAS.height
   barWidth = window.innerWidth - 2 * startStaffX - initialOffset - bufferToEnd
   unitDistance = barWidth / numberOfBeatsPerBar
-  drawSheet()
+  document.fonts.ready.then(() => drawSheet())
 }
 
 
