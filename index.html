@@ -1,384 +1,416 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <title>Sheet Music Generator</title>
-    <link rel="icon" href="./music.svg">
-    <link rel="preload" href="./fonts/Bravura.woff2" as="font" type="font/woff2" crossorigin>
-    
-    <style>
-        @font-face {
-            font-family: "Allura";
-            src: url("./fonts/allura-regular.woff2");
-        }
-        @font-face {
-            font-family:bravura;
-            src: url("./fonts/Bravura.woff2") format('woff2');
-        }
+  <title>Sheet Music Generator</title>
+  <link rel="icon" href="./music.svg">
+  <link rel="preload" href="./fonts/Bravura.woff2" as="font" type="font/woff2" crossorigin>
+
+  <style>
+    @font-face {
+      font-family: "Allura";
+      src: url("./fonts/allura-regular.woff2");
+    }
+
+    @font-face {
+      font-family: bravura;
+      src: url("./fonts/Bravura.woff2") format('woff2');
+    }
 
     body {
-        margin: 0;
-        margin-bottom:50px;
-        overflow-x:hidden;
+      margin: 0;
+      margin-bottom: 50px;
+      overflow-x: hidden;
     }
+
     input {
-        width: 3ch;
-        text-indent:0.25ch;
-        font-family:"Allura";
-        font-size:25px;
-        border:black 1px solid;
-        border-radius: 2px;
+      width: 3ch;
+      text-indent: 0.25ch;
+      font-family: "Allura";
+      font-size: 25px;
+      border: black 1px solid;
+      border-radius: 2px;
     }
-    
+
     select {
-        text-indent:0.25ch;
-        font-family:"Allura";
-        font-size:25px;
-        background-color:white;
-        border:black 1px solid;
-        border-radius: 2px;
+      text-indent: 0.25ch;
+      font-family: "Allura";
+      font-size: 25px;
+      background-color: white;
+      border: black 1px solid;
+      border-radius: 2px;
     }
+
     /* #sheet-music {
         display:none;
     } */
     .title {
-        font-family:"Allura";
-        font-size: 36px;
-        margin:0;
-        margin-top:10px;
-        text-align: center;
+      font-family: "Allura";
+      font-size: 36px;
+      margin: 0;
+      margin-top: 10px;
+      text-align: center;
     }
+
     #canvas_container {
-        position:relative;
+      position: relative;
     }
+
     #animation {
-        position:absolute;
-        left:0;
-        top: 0;
+      position: absolute;
+      left: 0;
+      top: 0;
     }
+
     #ui_container {
-        position:fixed;
-        bottom:0;
-        width: 100%;
-        /* margin-bottom:20px; */
-        display:grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        justify-items: center;
-        align-items: center;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      /* margin-bottom:20px; */
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      justify-items: center;
+      align-items: center;
     }
+
     #options_container {
-        font-family:"Allura";
-        font-weight:bold;
-        font-size:30px;
-        display: flex;
-        gap:20px;
-        align-items: center;
+      font-family: "Allura";
+      font-weight: bold;
+      font-size: 30px;
+      display: flex;
+      gap: 20px;
+      align-items: center;
 
     }
 
     #settings_image {
-        width:35px;
-        height:35px;
-        background-size:contain;
-        background-repeat: no-repeat;
-        background-image: url("images/settings.svg");
-        cursor:pointer;
+      width: 35px;
+      height: 35px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-image: url("images/settings.svg");
+      cursor: pointer;
     }
 
     #button_container {
-        display:flex;
-        gap:20px;
+      display: flex;
+      gap: 20px;
     }
-    #button_container > div {
-        cursor:pointer;
+
+    #button_container>div {
+      cursor: pointer;
     }
+
     #play_image {
-        width: 50px;
-        height: 50px;
-        background-image: url("/images/play.svg");
-        background-size: contain;
-        background-repeat: no-repeat;
+      width: 50px;
+      height: 50px;
+      background-image: url("/images/play.svg");
+      background-size: contain;
+      background-repeat: no-repeat;
     }
+
     #pause_image {
-        width: 50px;
-        height: 50px;
-        background-size: contain;
-        background-repeat: no-repeat;
-        /* background-image: url("/images/pause.svg"); */
+      width: 50px;
+      height: 50px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      /* background-image: url("/images/pause.svg"); */
     }
+
     #stop_image {
-        width: 50px;
-        height: 50px;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-image: url("/images/stop.svg");
+      width: 50px;
+      height: 50px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-image: url("/images/stop.svg");
     }
+
     #replay_image {
-        width: 50px;
-        height: 50px;
-        background-image: url("/images/replay.svg");
-        background-size: contain;
-        background-repeat: no-repeat;
-        font-size:18px;
-        font-family:"Allura";
-        text-align: center;
-        line-height:55px;
-        
-        transition:transform 0.5s;
+      width: 50px;
+      height: 50px;
+      background-image: url("/images/replay.svg");
+      background-size: contain;
+      background-repeat: no-repeat;
+      font-size: 18px;
+      font-family: "Allura";
+      text-align: center;
+      line-height: 55px;
+
+      transition: transform 0.5s;
     }
+
     .rotate_replay {
-        transform: rotate(1turn);
+      transform: rotate(1turn);
     }
+
     #randomise_image {
-        width: 50px;
-        height: 50px;
-        background-image: url("/images/roll.svg");
-        background-size: cover;
+      width: 50px;
+      height: 50px;
+      background-image: url("/images/roll.svg");
+      background-size: cover;
     }
+
     .hide {
-        display: none;
+      display: none;
     }
+
     .playImage {
-        background-image: url("/images/play.svg")
+      background-image: url("/images/play.svg")
     }
+
     .pauseImage {
-        background-image: url("/images/pause.svg")
+      background-image: url("/images/pause.svg")
     }
+
     .stopImage {
-        background-image: url("/images/stop.svg")
+      background-image: url("/images/stop.svg")
     }
+
     .closeImage {
-        background-image: url("/images/close.svg")
+      background-image: url("/images/close.svg")
+    }
+
+    .bravura {
+      font-family: bravura;
     }
 
     #metronome_container {
-        text-align: center;
-        font-family:"Allura";
-        font-weight:bold;
-        font-size:30px;
-        margin-bottom:10px;
-        /* margin-right: 50px; */
-        /* justify-self: end; */
+      text-align: center;
+      font-family: "Allura";
+      font-weight: bold;
+      font-size: 30px;
+      margin-bottom: 10px;
+      /* margin-right: 50px; */
+      /* justify-self: end; */
     }
 
 
     #metronome_bottom_line {
-        display:flex;
-        gap: 20px;
-        font-size: 20px;
-        align-items: center;
+      display: flex;
+      gap: 20px;
+      font-size: 20px;
+      align-items: center;
     }
 
 
-    #start_metronome, #stop_metronome {
-        background-size:contain;
-        background-repeat:no-repeat;
-        
-        cursor:pointer;
-        width:25px;
-        height:25px;
+    #start_metronome,
+    #stop_metronome {
+      background-size: contain;
+      background-repeat: no-repeat;
+
+      cursor: pointer;
+      width: 25px;
+      height: 25px;
     }
 
     #options_menu {
-        position:absolute;
-        border:black double 5px;
-        height:75%;
-        width:75%;
-        transform:translate(-50%,-50%);
-        background-color: white;
-        top:50%;
-        left:50%;
+      position: absolute;
+      border: black double 5px;
+      height: 75%;
+      width: 75%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      top: 50%;
+      left: 50%;
 
-        font-size:40px;
-        font-family:"Allura";
-        font-weight:bold;
+      font-size: 40px;
+      font-family: "Allura";
+      font-weight: bold;
     }
+
     .options_menu_display {
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 3fr 2fr;
-        flex-direction: column;
-        justify-content: space-around;
-        align-items: center;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 3fr 2fr;
+      flex-direction: column;
+      justify-content: space-around;
+      align-items: center;
     }
 
-    .top_left_options, .top_right_options {
-        display: flex;
-        height:100%;
-        text-align:center;
-        flex-direction: column;
-        justify-content: space-around;
+    .top_left_options,
+    .top_right_options {
+      display: flex;
+      height: 100%;
+      text-align: center;
+      flex-direction: column;
+      justify-content: space-around;
     }
 
     .bottom_options {
-        grid-column: 1 / 3;
-        justify-self: center;
+      grid-column: 1 / 3;
+      justify-self: center;
     }
 
     #close_image {
-        position:absolute;
-        background-size:contain;
-        background-repeat:no-repeat;
-        background-image: url("./images/close.svg");
-        width:50px;
-        height:50px;
-        top:10px;
-        right:10px;
-        cursor: pointer;
+      position: absolute;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-image: url("./images/close.svg");
+      width: 50px;
+      height: 50px;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
     }
+
     .invisible {
-        visibility:hidden;
+      visibility: hidden;
     }
 
-    .note_durations > label {
-        font-size: 30px;
+    .note_durations>label {
+      font-size: 30px;
     }
-    </style>
+  </style>
 </head>
+
 <body>
-    <h1 class="title">Sheet Generator</h1>
-    <div id="canvas_container">
-        <canvas id="sheet-music"></canvas>
-        <canvas id="animation"></canvas>
-    </div>
-    
+  <h1 class="title">Sheet Generator</h1>
+  <div id="canvas_container">
+    <canvas id="sheet-music"></canvas>
+    <canvas id="animation"></canvas>
+  </div>
 
-    <div id="ui_container">
-        <div id="options_container">
-            <label id="bpm">BPM:&nbsp;
-                <input id="bpmInput" min="10" max="320" />
-            </label>
-            <label id="key_changer_label">
-                Key:&nbsp;
-            <select id="keyChanger" onchange="changeKey(this)">
-                <option>C</option>
-                <option>G</option>
-                <option>D</option>
-                <option>A</option>
-                <option>E</option>
-                <option>B</option>
-                <option>F</option>
-                <option>A#/Bb</option>
-                <option>D#/Eb</option>
-                <option>G#/Ab</option>
-                <option>Db</option>
-                <option>F#</option>
-                <option>Gb</option>
-                <option>C#</option>
-                <option>Cb</option>
-            </select>
-            </label>
-            <div id="settings_image" onclick="toggleOptionsMenu()"></div>
-        </div>
-        <div id="button_container">
-            <div onClick="play()" id="play_image"></div>
-            <div onClick="pausePlayback()" id="pause_image" class="pauseImage hide"></div>
-            <div onClick="stopPlayback()" id="stop_image" class="hide"></div>
-            <div onClick="randomise()" id="randomise_image"></div>
-            <div onClick="toggleReplay()" id="replay_image">Off</div>
-        </div>
-        <div id="metronome_container">
-        <div>Metronome</div>
-        <!-- <button id="start_metronome" onclick="startMetronome()">Start Metronome</button> -->
-        <div id="metronome_bottom_line">
-            <div id="start_metronome" class="playImage" onclick="startMetronome()"></div>
-            <!-- <button id="stop_metronome" class="stopImage" onclick="stopMetronome()">Stop Metronome</button> -->
-            <div id="stop_metronome" class="stopImage hide" onclick="stopMetronome()"></div>
-            <label id="metronome_label">
-                BPM:&nbsp;
-                <input id="metronomeBPM"/>
-            </label>
-        </div>
-    </div>
-    </div>
-    <div id="options_menu" class="hide">
-        <div id="close_image" onclick="toggleOptionsMenu()"></div>
-        <div class="top_left_options">
-        <label id="measures_label">
-            Measures:&nbsp;
-            <input  max="6" min="1" id="measures" onchange="changeMeasures(this)" />
-        </label>
-        <label id="measures_per_bar_label">
-            Measures per Bar:&nbsp;
-            <select id="measures_per_bar" onchange="changeMeasuresPerBar(this)">
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-            </select>
-        </label>
-        <label id="beats_per_measure_label">
-            Beats per Measure:&nbsp;
-            <select id="beats_per_measure" onchange="changeBeatsPerMeasure(this)">
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-            </select>
-        </label>
-        <label>Root Octave Treble
-            <select id="change_root_octave_treble" onchange="changeRootOctaveTreble(this)">
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
-            </select>
-        </label>
-        <label>Root Octave Bass
-            <select id="change_root_octave_bass" onchange="changeRootOctaveBass(this)">
-                <!-- <option>1</option> -->
-                <option>2</option>
-                <option>3</option>
-            </select>
-        </label>
-        </div>
-        <div class="top_right_options">
-        <label>Key Mode
-            <select id="change_scale_mode" onchange="changeKeyMode(this)">
-                <option>Major</option>
-                <option>Minor</option>
-            </select>
-        </label>
-        <label>Treble Scale
-            <select id="change_scale_treble" onchange="changeScale()">
-                    <option value="majorHeptatonic">Heptatonic</option>
-                    <option value="majorPentatonic">Pentatonic</option>
-                    <option value="majorTritonic">Tritonic</option>
-            </select>
-        </label>
-        <label>Bass Scale
-            <select id="change_scale_bass" onchange="changeScale()">
-                    <option value="majorHeptatonic">Heptatonic</option>
-                    <option value="majorPentatonic">Pentatonic</option>
-                    <option value="majorTritonic">Tritonic</option>
-            </select>
-        </label>
-        <label id="toggle_chords_label">Chords:&nbsp;
-            <input id="toggle_chords" type="checkbox" onchange="toggleChords(this)" />
-        </label>
-        </div>
-        <div class="bottom_options">
-        <div class="note_durations">
-            <div>Treble Note Durations</div>
-            <label>Half <input id="treble_durations_half" type="checkbox" onchange="changeTrebleDurations()"></label>
-            <label>Quarter <input id="treble_durations_quarter" type="checkbox" onchange="changeTrebleDurations()"></label>
-            <label>Eighth <input id="treble_durations_eighth" type="checkbox" onchange="changeTrebleDurations()"></label>
-            <label>Sixteenth <input id="treble_durations_sixteenth" type="checkbox" onchange="changeTrebleDurations()"></label>
-        </div>
-        <div class="note_durations">
-            <div>Bass Note Durations</div>
-            <label>Half <input id="bass_durations_half" type="checkbox" onchange="changeBassDurations()"></label>
-            <label>Quarter <input id="bass_durations_quarter" type="checkbox" onchange="changeBassDurations()"></label>
-            <label>Eighth <input id="bass_durations_eighth" type="checkbox" onchange="changeBassDurations()"></label>
-            <label>Sixteenth <input id="bass_durations_sixteenth" type="checkbox" onchange="changeBassDurations()"></label>
-        </div>
-    </div>
-        <!-- <label>Possible Note Durations Bass</label> -->
-    </div>
-    <div class="invisible">
-        <div class="closeImage"></div>
-        <div class="stopImage"></div>
-        <div class="pauseImage"></div>
-    </div>
 
-    
+  <div id="ui_container">
+    <div id="options_container">
+      <label id="bpm">BPM:&nbsp;
+        <input id="bpmInput" min="10" max="320" />
+      </label>
+      <label id="key_changer_label">
+        Key:&nbsp;
+        <select id="keyChanger" onchange="changeKey(this)">
+          <option>C</option>
+          <option>G</option>
+          <option>D</option>
+          <option>A</option>
+          <option>E</option>
+          <option>B</option>
+          <option>F</option>
+          <option>A#/Bb</option>
+          <option>D#/Eb</option>
+          <option>G#/Ab</option>
+          <option>Db</option>
+          <option>F#</option>
+          <option>Gb</option>
+          <option>C#</option>
+          <option>Cb</option>
+        </select>
+      </label>
+      <div id="settings_image" onclick="toggleOptionsMenu()"></div>
+    </div>
+    <div id="button_container">
+      <div onClick="play()" id="play_image"></div>
+      <div onClick="pausePlayback()" id="pause_image" class="pauseImage hide"></div>
+      <div onClick="stopPlayback()" id="stop_image" class="hide"></div>
+      <div onClick="randomise()" id="randomise_image"></div>
+      <div onClick="toggleReplay()" id="replay_image">Off</div>
+    </div>
+    <div id="metronome_container">
+      <div>Metronome</div>
+      <!-- <button id="start_metronome" onclick="startMetronome()">Start Metronome</button> -->
+      <div id="metronome_bottom_line">
+        <div id="start_metronome" class="playImage" onclick="startMetronome()"></div>
+        <!-- <button id="stop_metronome" class="stopImage" onclick="stopMetronome()">Stop Metronome</button> -->
+        <div id="stop_metronome" class="stopImage hide" onclick="stopMetronome()"></div>
+        <label id="metronome_label">
+          BPM:&nbsp;
+          <input id="metronomeBPM" />
+        </label>
+      </div>
+    </div>
+  </div>
+  <div id="options_menu" class="hide">
+    <div id="close_image" onclick="toggleOptionsMenu()"></div>
+    <div class="top_left_options">
+      <label id="measures_label">
+        Measures:&nbsp;
+        <input max="6" min="1" id="measures" onchange="changeMeasures(this)" />
+      </label>
+      <label id="measures_per_bar_label">
+        Measures per Bar:&nbsp;
+        <select id="measures_per_bar" onchange="changeMeasuresPerBar(this)">
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+        </select>
+      </label>
+      <label id="beats_per_measure_label">
+        Beats per Measure:&nbsp;
+        <select id="beats_per_measure" onchange="changeBeatsPerMeasure(this)">
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+        </select>
+      </label>
+      <label>Root Octave Treble
+        <select id="change_root_octave_treble" onchange="changeRootOctaveTreble(this)">
+          <option>3</option>
+          <option>4</option>
+          <option>5</option>
+        </select>
+      </label>
+      <label>Root Octave Bass
+        <select id="change_root_octave_bass" onchange="changeRootOctaveBass(this)">
+          <!-- <option>1</option> -->
+          <option>2</option>
+          <option>3</option>
+        </select>
+      </label>
+    </div>
+    <div class="top_right_options">
+      <label>Key Mode
+        <select id="change_scale_mode" onchange="changeKeyMode(this)">
+          <option>Major</option>
+          <option>Minor</option>
+        </select>
+      </label>
+      <label>Treble Scale
+        <select id="change_scale_treble" onchange="changeScale()">
+          <option value="majorHeptatonic">Heptatonic</option>
+          <option value="majorPentatonic">Pentatonic</option>
+          <option value="majorTritonic">Tritonic</option>
+        </select>
+      </label>
+      <label>Bass Scale
+        <select id="change_scale_bass" onchange="changeScale()">
+          <option value="majorHeptatonic">Heptatonic</option>
+          <option value="majorPentatonic">Pentatonic</option>
+          <option value="majorTritonic">Tritonic</option>
+        </select>
+      </label>
+      <label id="toggle_chords_label">Chords:&nbsp;
+        <input id="toggle_chords" type="checkbox" onchange="toggleChords(this)" />
+      </label>
+    </div>
+    <div class="bottom_options">
+      <div class="note_durations">
+        <div>Treble Note Durations</div>
+        <label>Half <input id="treble_durations_half" type="checkbox" onchange="changeTrebleDurations()"></label>
+        <label>Quarter <input id="treble_durations_quarter" type="checkbox" onchange="changeTrebleDurations()"></label>
+        <label>Eighth <input id="treble_durations_eighth" type="checkbox" onchange="changeTrebleDurations()"></label>
+        <label>Sixteenth <input id="treble_durations_sixteenth" type="checkbox"
+            onchange="changeTrebleDurations()"></label>
+      </div>
+      <div class="note_durations">
+        <div>Bass Note Durations</div>
+        <label>Half <input id="bass_durations_half" type="checkbox" onchange="changeBassDurations()"></label>
+        <label>Quarter <input id="bass_durations_quarter" type="checkbox" onchange="changeBassDurations()"></label>
+        <label>Eighth <input id="bass_durations_eighth" type="checkbox" onchange="changeBassDurations()"></label>
+        <label>Sixteenth <input id="bass_durations_sixteenth" type="checkbox" onchange="changeBassDurations()"></label>
+      </div>
+    </div>
+    <!-- <label>Possible Note Durations Bass</label> -->
+  </div>
+  <div class="invisible">
+    <div class="closeImage"></div>
+    <div class="stopImage"></div>
+    <div class="pauseImage"></div>
+    <div class="bravura">Test</div>
+  </div>
+
+
 </body>
 <script src="script.js" defer></script>
+
 </html>
